@@ -92,10 +92,12 @@ export async function GET(
     if (query.entityType) filters.entityType = query.entityType
     if (query.entityId) filters.entityId = query.entityId
 
-    const offset = (pagination.page - 1) * pagination.limit
+    const page = pagination.page ?? 1
+    const limit = pagination.limit ?? 20
+    const offset = (page - 1) * limit
 
     const [mediaFiles, count] = await mediaService.listAndCountMediaFiles(filters, {
-      take: pagination.limit,
+      take: limit,
       skip: offset,
       order: { created_at: 'DESC' },
     })
@@ -103,10 +105,10 @@ export async function GET(
     res.status(200).json({
       data: mediaFiles,
       meta: {
-        page: pagination.page,
-        limit: pagination.limit,
+        page,
+        limit,
         total: count,
-        totalPages: Math.ceil(count / pagination.limit),
+        totalPages: Math.ceil(count / limit),
       },
     })
   } catch (error) {

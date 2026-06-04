@@ -17,28 +17,6 @@ export default async function seedBrands({ container }: ExecArgs) {
 
   const brands = [
     {
-      title: "COSRX",
-      handle: "cosrx",
-      metadata: {
-        origin: "South Korea",
-        description:
-          "K-beauty pioneer known for snail mucin serums and BHA/AHA treatments. Science-backed, minimal ingredient lists.",
-        logo_url: "",
-        featured: true,
-      },
-    },
-    {
-      title: "Beauty of Joseon",
-      handle: "beauty-of-joseon",
-      metadata: {
-        origin: "South Korea",
-        description:
-          "Inspired by Joseon Dynasty beauty secrets — hanbang (traditional herbal) ingredients blended with modern skincare.",
-        logo_url: "",
-        featured: true,
-      },
-    },
-    {
       title: "ANUA",
       handle: "anua",
       metadata: {
@@ -50,56 +28,23 @@ export default async function seedBrands({ container }: ExecArgs) {
       },
     },
     {
-      title: "SKIN1004",
-      handle: "skin1004",
+      title: "AROMATICA",
+      handle: "aromatica",
       metadata: {
         origin: "South Korea",
         description:
-          "Madagascar centella asiatica specialist. Minimal, hypoallergenic formulas for irritated and barrier-compromised skin.",
-        logo_url: "",
-        featured: true,
-      },
-    },
-    {
-      title: "I'm From",
-      handle: "im-from",
-      metadata: {
-        origin: "South Korea",
-        description:
-          "Locally-sourced Korean natural ingredients — rice, ginseng, honey, mugwort — in high-concentration formulas.",
-        logo_url: "",
-        featured: true,
-      },
-    },
-    {
-      title: "Medicube",
-      handle: "medicube",
-      metadata: {
-        origin: "South Korea",
-        description:
-          "Dermatologist-developed brand focused on pore care, brightening, and skin-clinic-grade actives.",
-        logo_url: "",
-        featured: true,
-      },
-    },
-    {
-      title: "Some By Mi",
-      handle: "some-by-mi",
-      metadata: {
-        origin: "South Korea",
-        description:
-          "AHA/BHA/PHA toner fame. Targets acne, hyperpigmentation, and texture with gentle yet effective acid blends.",
+          "Certified natural and vegan. Rosehip, tea tree, and calendula-led formulas in eco-friendly packaging.",
         logo_url: "",
         featured: false,
       },
     },
     {
-      title: "Heimish",
-      handle: "heimish",
+      title: "ARENCIA",
+      handle: "arencia",
       metadata: {
         origin: "South Korea",
         description:
-          "Danish-meets-Korean minimalism. Gentle cleansers and hydrating essences for everyday, fuss-free skincare.",
+          "Fermented ingredient specialist. Probiotic and yeast-based formulas for microbiome-balanced, glowing skin.",
         logo_url: "",
         featured: false,
       },
@@ -116,34 +61,34 @@ export default async function seedBrands({ container }: ExecArgs) {
       },
     },
     {
-      title: "Dr. Althea",
-      handle: "dr-althea",
+      title: "BANILA CO",
+      handle: "banila-co",
       metadata: {
         origin: "South Korea",
         description:
-          "Derma-cosmetics brand with retinol, peptide, and brightening lines. Designed for results-focused routines.",
+          "Home of the iconic Clean It Zero cleansing balm. Makeup removal and clean skin as a self-care ritual.",
         logo_url: "",
         featured: false,
       },
     },
     {
-      title: "iUNIK",
-      handle: "iunik",
+      title: "BEAUTY OF JOSEON",
+      handle: "beauty-of-joseon",
       metadata: {
         origin: "South Korea",
         description:
-          "Clean beauty with high active percentages — centella, propolis, vitamin C — at accessible price points.",
+          "Inspired by Joseon Dynasty beauty secrets — hanbang (traditional herbal) ingredients blended with modern skincare.",
         logo_url: "",
-        featured: false,
+        featured: true,
       },
     },
     {
-      title: "Missha",
-      handle: "missha",
+      title: "BY WISHTREND",
+      handle: "by-wishtrend",
       metadata: {
         origin: "South Korea",
         description:
-          "One of Korea's original affordable luxury brands. Famous for Time Revolution essence and BB creams.",
+          "Science-backed brand from Wishtrend beauty lab. Vitamin C, mandelic acid, and bakuchiol actives.",
         logo_url: "",
         featured: false,
       },
@@ -154,13 +99,35 @@ export default async function seedBrands({ container }: ExecArgs) {
       metadata: {
         origin: "South Korea",
         description:
-          "Lip care specialist known for watery tints, hydrating glosses, and long-wear lip colours.",
+          "High-potency actives — AHA, BHA, niacinamide, ceramides — at accessible price points for all skin types.",
         logo_url: "",
         featured: false,
       },
     },
     {
-      title: "Cos De BAHA",
+      title: "CELIMAX",
+      handle: "celimax",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Noni fruit and green ingredients for soothing and calming inflamed, acne-prone skin.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "CETAPHIL",
+      handle: "cetaphil",
+      metadata: {
+        origin: "USA",
+        description:
+          "Dermatologist-recommended gentle cleansers and moisturisers for dry and sensitive skin.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "COS DE BAHA",
       handle: "cos-de-baha",
       metadata: {
         origin: "South Korea",
@@ -171,25 +138,14 @@ export default async function seedBrands({ container }: ExecArgs) {
       },
     },
     {
-      title: "Numbuzin",
-      handle: "numbuzin",
+      title: "COSRX",
+      handle: "cosrx",
       metadata: {
         origin: "South Korea",
         description:
-          "Numbered skincare system targeting specific concerns — glass skin, brightening, pore minimising.",
+          "K-beauty pioneer known for snail mucin serums and BHA/AHA treatments. Science-backed, minimal ingredient lists.",
         logo_url: "",
-        featured: false,
-      },
-    },
-    {
-      title: "Isntree",
-      handle: "isntree",
-      metadata: {
-        origin: "South Korea",
-        description:
-          "Hyaluronic acid powerhouse. Fragrance-free, minimalist toners and moisturisers for dry, sensitive skin.",
-        logo_url: "",
-        featured: false,
+        featured: true,
       },
     },
     {
@@ -204,29 +160,139 @@ export default async function seedBrands({ container }: ExecArgs) {
       },
     },
     {
-      title: "Arencia",
-      handle: "arencia",
+      title: "DR. ALTHEA",
+      handle: "dr-althea",
       metadata: {
         origin: "South Korea",
         description:
-          "Fermented ingredient specialist. Probiotic and yeast-based formulas for microbiome-balanced, glowing skin.",
+          "Derma-cosmetics brand with retinol, peptide, and brightening lines. Designed for results-focused routines.",
         logo_url: "",
         featured: false,
       },
     },
     {
-      title: "Aromatica",
-      handle: "aromatica",
+      title: "EQUALBERRY",
+      handle: "equalberry",
       metadata: {
         origin: "South Korea",
         description:
-          "Certified natural and vegan. Rosehip, tea tree, and calendula-led formulas in eco-friendly packaging.",
+          "Berry and antioxidant-rich skincare. Brightening and protective formulas using superfruit extracts.",
         logo_url: "",
         featured: false,
       },
     },
     {
-      title: "Klairs",
+      title: "GOODAL",
+      handle: "goodal",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Green tangerine vitamin C specialist. Bright, fruity actives for dark spot correction and glow.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "HARUHARU WONDER",
+      handle: "haruharu-wonder",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Black rice hyaluronic formulas for deep hydration and sensitive skin repair.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "HEIMISH",
+      handle: "heimish",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Danish-meets-Korean minimalism. Gentle cleansers and hydrating essences for everyday, fuss-free skincare.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "I'M FROM",
+      handle: "im-from",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Locally-sourced Korean natural ingredients — rice, ginseng, honey, mugwort — in high-concentration formulas.",
+        logo_url: "",
+        featured: true,
+      },
+    },
+    {
+      title: "INNISFREE",
+      handle: "innisfree",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Jeju island natural ingredients — green tea, volcanic ash, orchid — in clean, eco-conscious formulas.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "ISNTREE",
+      handle: "isntree",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Hyaluronic acid powerhouse. Fragrance-free, minimalist toners and moisturisers for dry, sensitive skin.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "IUNIK",
+      handle: "iunik",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Clean beauty with high active percentages — centella, propolis, vitamin C — at accessible price points.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "JNH",
+      handle: "jnh",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Gentle, effective K-beauty formulas for daily cleansing and skincare routines.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "JUMISO",
+      handle: "jumiso",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Playful K-beauty with effective actives — niacinamide, vitamin C — in cheerful, accessible packaging.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "K-SECRET",
+      handle: "k-secret",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Seoul 1988-inspired K-beauty brand combining classic hanbang traditions with modern actives.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "KLAIRS",
       handle: "klairs",
       metadata: {
         origin: "South Korea",
@@ -234,6 +300,83 @@ export default async function seedBrands({ container }: ExecArgs) {
           "Sensitive-skin pioneers. Fragrance-free, pH-balanced toners and essentials loved globally for barrier repair.",
         logo_url: "",
         featured: false,
+      },
+    },
+    {
+      title: "MARY & MAY",
+      handle: "mary-and-may",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Glutathione, tranexamic acid, and peptide formulas for brightening and anti-ageing.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "MEDICUBE",
+      handle: "medicube",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Dermatologist-developed brand focused on pore care, brightening, and skin-clinic-grade actives.",
+        logo_url: "",
+        featured: true,
+      },
+    },
+    {
+      title: "MISSHA",
+      handle: "missha",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "One of Korea's original affordable luxury brands. Famous for Time Revolution essence and BB creams.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "NUMBUZIN",
+      handle: "numbuzin",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Numbered skincare system targeting specific concerns — glass skin, brightening, pore minimising.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "PURITO SEOUL",
+      handle: "purito-seoul",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Transparent, clean formulas with centella and kombucha. Known for reef-safe sunscreens.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "ROUND LAB",
+      handle: "round-lab",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Dokdo deep-sea water and birch sap skincare. Hydration-focused, dermatologically tested formulas.",
+        logo_url: "",
+        featured: false,
+      },
+    },
+    {
+      title: "SKIN1004",
+      handle: "skin1004",
+      metadata: {
+        origin: "South Korea",
+        description:
+          "Madagascar centella asiatica specialist. Minimal, hypoallergenic formulas for irritated and barrier-compromised skin.",
+        logo_url: "",
+        featured: true,
       },
     },
     {
@@ -248,78 +391,12 @@ export default async function seedBrands({ container }: ExecArgs) {
       },
     },
     {
-      title: "ABIB",
-      handle: "abib",
+      title: "SOME BY MI",
+      handle: "some-by-mi",
       metadata: {
         origin: "South Korea",
         description:
-          "Minimal, clinical formulas inspired by dermatology. Jelly toners and concentrated essence pads.",
-        logo_url: "",
-        featured: false,
-      },
-    },
-    {
-      title: "Banila Co",
-      handle: "banila-co",
-      metadata: {
-        origin: "South Korea",
-        description:
-          "Home of the iconic Clean It Zero cleansing balm. Makeup removal and clean skin as a self-care ritual.",
-        logo_url: "",
-        featured: false,
-      },
-    },
-    {
-      title: "By Wishtrend",
-      handle: "by-wishtrend",
-      metadata: {
-        origin: "South Korea",
-        description:
-          "Science-backed brand from Wishtrend beauty lab. Vitamin C, mandelic acid, and bakuchiol actives.",
-        logo_url: "",
-        featured: false,
-      },
-    },
-    {
-      title: "Round Lab",
-      handle: "round-lab",
-      metadata: {
-        origin: "South Korea",
-        description:
-          "Dokdo deep-sea water and birch sap skincare. Hydration-focused, dermatologically tested formulas.",
-        logo_url: "",
-        featured: false,
-      },
-    },
-    {
-      title: "Celimax",
-      handle: "celimax",
-      metadata: {
-        origin: "South Korea",
-        description:
-          "Noni fruit and green ingredients for soothing and calming inflamed, acne-prone skin.",
-        logo_url: "",
-        featured: false,
-      },
-    },
-    {
-      title: "PURITO",
-      handle: "purito",
-      metadata: {
-        origin: "South Korea",
-        description:
-          "Transparent, clean formulas with centella and kombucha. Known for reef-safe sunscreens.",
-        logo_url: "",
-        featured: false,
-      },
-    },
-    {
-      title: "Eqqualberry",
-      handle: "eqqualberry",
-      metadata: {
-        origin: "South Korea",
-        description:
-          "Berry and antioxidant-rich skincare. Brightening and protective formulas using superfruit extracts.",
+          "AHA/BHA/PHA toner fame. Targets acne, hyperpigmentation, and texture with gentle yet effective acid blends.",
         logo_url: "",
         featured: false,
       },
@@ -328,7 +405,7 @@ export default async function seedBrands({ container }: ExecArgs) {
 
   for (const brand of brands) {
     try {
-      const existing = await productService.listCollections({
+      const existing = await productService.listProductCollections({
         handle: [brand.handle],
       })
 
@@ -337,7 +414,7 @@ export default async function seedBrands({ container }: ExecArgs) {
         continue
       }
 
-      await productService.createCollections([
+      await productService.createProductCollections([
         {
           title: brand.title,
           handle: brand.handle,

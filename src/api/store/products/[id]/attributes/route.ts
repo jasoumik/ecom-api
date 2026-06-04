@@ -39,7 +39,8 @@ export async function POST(
     const body = validateBody(SetProductAttributesSchema, req.body)
 
     const attributeService = req.scope.resolve<AttributeModuleService>(ATTRIBUTE_MODULE)
-    await attributeService.setProductAttributes(id, body.attributes)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await attributeService.setProductAttributes(id, body.attributes as any)
 
     const updated = await attributeService.getProductAttributes(id)
     res.status(200).json({ data: updated })

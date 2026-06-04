@@ -1,4 +1,4 @@
-import { PRODUCT_MODULE } from '@medusajs/framework/utils'
+import { Modules } from '@medusajs/framework/utils'
 import type { MedusaRequest, MedusaResponse } from '@medusajs/framework'
 import { SEARCH_MODULE } from '../../../../modules/search'
 import type SearchModuleService from '../../../../modules/search/service/search-module-service'
@@ -20,7 +20,7 @@ export const POST = async (
 ): Promise<void> => {
   try {
     const searchService = req.scope.resolve<SearchModuleService>(SEARCH_MODULE)
-    const productService = req.scope.resolve(PRODUCT_MODULE)
+    const productService = req.scope.resolve(Modules.PRODUCT)
 
     logger.info('Admin triggered full reindex')
 
@@ -33,7 +33,7 @@ export const POST = async (
       count: number
     }
 
-    const { products } = await (productService as {
+    const { products } = await (productService as unknown as {
       listProducts: (
         filters: Record<string, unknown>,
         options: { relations: string[]; take: number }

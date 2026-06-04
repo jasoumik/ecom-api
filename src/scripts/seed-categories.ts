@@ -60,11 +60,11 @@ export default async function seedCategories({ container }: ExecArgs) {
         if (node.description) payload.description = node.description
         if (parentCategoryId) payload.parent_category_id = parentCategoryId
 
-        const created = await (productService as {
+        const [created] = await (productService as unknown as {
           createProductCategories: (
-            data: Record<string, unknown>
-          ) => Promise<{ id: string }>
-        }).createProductCategories(payload)
+            data: Record<string, unknown>[]
+          ) => Promise<Array<{ id: string }>>
+        }).createProductCategories([payload])
         id = created.id
         console.log(`  Created: ${node.handle} (id: ${id})`)
         existingHandles.add(node.handle)

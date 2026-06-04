@@ -48,6 +48,15 @@ class ComboOfferModuleService
     return offer
   }
 
+  // ── findAll ─────────────────────────────────────────────────────────────────
+
+  async findAll(filters: Record<string, unknown> = {}): Promise<IComboOffer[]> {
+    logger.info('findAll', { filters })
+    const results = await this.repo.findAll(filters)
+    logger.info('findAll success', { count: results.length })
+    return results
+  }
+
   // ── getActiveOffers ─────────────────────────────────────────────────────────
 
   async getActiveOffers(): Promise<IComboOffer[]> {

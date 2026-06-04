@@ -1,4 +1,4 @@
-import { MeiliSearch } from 'meilisearch'
+import { MeiliSearch, Key } from 'meilisearch'
 import { createLogger } from '../../../shared/logger'
 import type {
   ISearchableProduct,
@@ -17,10 +17,10 @@ const logger = createLogger('SearchModule')
 export class SearchModuleService implements ISearchService {
   private client: MeiliSearch
 
-  constructor(private readonly options: { host: string; apiKey: string }) {
+  constructor() {
     this.client = new MeiliSearch({
-      host: options.host,
-      apiKey: options.apiKey,
+      host: process.env.MEILISEARCH_HOST ?? 'http://localhost:7700',
+      apiKey: process.env.MEILISEARCH_API_KEY ?? '',
     })
   }
 
@@ -151,7 +151,7 @@ export class SearchModuleService implements ISearchService {
     try {
       const keys = await this.client.getKeys()
       const existing = keys.results.find(
-        (k) => k.description === SEARCH_KEY_DESCRIPTION,
+        (k: Key) => k.description === SEARCH_KEY_DESCRIPTION,
       )
       if (existing?.key) {
         return existing.key

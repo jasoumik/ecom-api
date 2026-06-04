@@ -1,4 +1,4 @@
-import { PRODUCT_MODULE } from '@medusajs/framework/utils'
+import { Modules } from '@medusajs/framework/utils'
 import type { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
 import { SEARCH_MODULE } from '../index'
 import type SearchModuleService from '../service/search-module-service'
@@ -89,7 +89,7 @@ export default async function productIndexerSubscriber({
     return
   }
 
-  const productService = container.resolve(PRODUCT_MODULE)
+  const productService = container.resolve(Modules.PRODUCT)
 
   const product = await (productService as {
     retrieveProduct: (
