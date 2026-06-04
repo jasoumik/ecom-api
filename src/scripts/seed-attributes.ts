@@ -4,56 +4,52 @@
  * Run via Medusa exec:
  *   npx medusa exec src/scripts/seed-attributes.ts
  *
- * The script resolves the category IDs it needs from the database by slug,
+ * The script resolves the category IDs it needs from the database by handle,
  * then delegates seeding to AttributeModuleService.seedBeautyAttributes().
  */
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import { ExecArgs } from "@medusajs/framework/types"
+import { Modules } from "@medusajs/framework/utils"
 import { ATTRIBUTE_MODULE } from "../modules/attribute"
 import type AttributeModuleService from "../modules/attribute/service/attribute-module-service"
-import { CATEGORY_MODULE } from "../modules/category"
-import type CategoryModuleService from "../modules/category/service/category-module-service"
 
-export default async function seedAttributes({
-  container,
-}: {
-  container: Record<string, unknown>
-}): Promise<void> {
-  const logger = (
-    container[ContainerRegistrationKeys.LOGGER] as {
-      info: (msg: string) => void
-      error: (msg: string) => void
-    }
-  ) ?? { info: console.log, error: console.error }
+export default async function seedAttributes({ container }: ExecArgs): Promise<void> {
+  console.log("Starting attribute seed...")
 
-  logger.info("Starting attribute seed...")
+  const productService = container.resolve(Modules.PRODUCT)
+  const attributeService = container.resolve<AttributeModuleService>(ATTRIBUTE_MODULE)
 
-  const categoryService =
-    container[CATEGORY_MODULE] as CategoryModuleService
+  const logger = { info: console.log, error: console.error }
 
-  const attributeService =
-    container[ATTRIBUTE_MODULE] as AttributeModuleService
+  // ── Resolve category IDs by handle ────────────────────────────────────────
+  const handlesToResolve = [
+    "all-products",
+    "skincare",
+    "baby-care",
+    "hair-care",
+    "body-care",
+  ]
 
-  // ── Resolve category IDs by slug ──────────────────────────────────────────
-  const slugToHandle: Record<string, string> = {
-    "all-products": "root",
-    skincare: "skincare",
-    "baby-care": "baby-care",
-    "hair-care": "hair-care",
-    "body-care": "body-care",
-  }
+  const allCategories = await (productService as {
+    listProductCategories: (
+      filters: Record<string, unknown>,
+      options: Record<string, unknown>
+    ) => Promise<Array<{ id: string; handle: string }>>
+  }).listProductCategories({}, { take: 500 })
+
+  const byHandle = new Map(allCategories.map((c) => [c.handle, c.id]))
 
   const categoryHandleToId: Record<string, string> = {}
 
-  for (const [slug, handle] of Object.entries(slugToHandle)) {
-    const category = await categoryService.getBySlug(slug)
-    if (category) {
-      categoryHandleToId[handle] = category.id
-      logger.info(`Resolved category "${slug}" → ${category.id}`)
+  for (const handle of handlesToResolve) {
+    const id = byHandle.get(handle)
+    if (id) {
+      categoryHandleToId[handle] = id
+      logger.info(`Resolved category "${handle}" → ${id}`)
     } else {
       logger.error(
-        `Category with slug "${slug}" not found — using slug as fallback ID`
+        `Category with handle "${handle}" not found — using handle as fallback ID`
       )
-      categoryHandleToId[handle] = slug
+      categoryHandleToId[handle] = handle
     }
   }
 

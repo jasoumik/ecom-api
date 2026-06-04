@@ -16,9 +16,6 @@ module.exports = defineConfig({
   },
   modules: [
     {
-      resolve: "./src/modules/category",
-    },
-    {
       resolve: "./src/modules/landing-page",
     },
     {
