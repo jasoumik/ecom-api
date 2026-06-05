@@ -28,18 +28,15 @@ export const POST = async (
     await searchService.reindexAll()
 
     // Fetch all products with required relations
-    type ProductListResult = {
-      products: Parameters<typeof mapProductToSearchable>[0][]
-      count: number
-    }
+    type ProductItem = Parameters<typeof mapProductToSearchable>[0]
 
-    const { products } = await (productService as unknown as {
+    const products = await (productService as unknown as {
       listProducts: (
         filters: Record<string, unknown>,
         options: { relations: string[]; take: number }
-      ) => Promise<ProductListResult>
+      ) => Promise<ProductItem[]>
     }).listProducts({}, {
-      relations: ['categories', 'variants', 'variants.prices', 'tags'],
+      relations: ['categories', 'variants', 'tags'],
       take: 10000,
     })
 

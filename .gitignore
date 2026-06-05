@@ -70,3 +70,6 @@ public/uploads/
 .cache/
 .temp/
 tmp/
+
+# MeiliSearch local data
+data.ms/
