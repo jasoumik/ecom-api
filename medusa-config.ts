@@ -16,10 +16,16 @@ module.exports = defineConfig({
   },
   modules: [
     {
-      resolve: "./src/modules/landing-page",
-    },
-    {
-      resolve: "./src/modules/combo-offer",
+      resolve: "@medusajs/medusa/payment",
+      options: {
+        providers: [
+          {
+            resolve: "./src/modules/payment-cod",
+            id: "cod",
+            options: {},
+          },
+        ],
+      },
     },
     {
       resolve: "./src/modules/attribute",
