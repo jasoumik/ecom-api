@@ -87,18 +87,36 @@ export const GET = async (
     if (req.query.handle) {
       filters.handle = req.query.handle
     }
+    const originCountry = req.query.country_code as string | undefined
 
-    const [products, count] = await svc.listAndCountProducts(filters, {
-      take: limit,
-      skip: offset,
-      relations: [
-        'variants',
-        'images',
-        'categories',
-        'collection',
-        'tags',
-      ],
+    // origin_country is not a filterable field in Medusa's ORM — fetch a
+    // larger batch and post-filter when the param is present.
+    const fetchLimit = originCountry ? 500 : limit
+    const fetchOffset = originCountry ? 0 : offset
+
+    const [allProducts, totalCount] = await svc.listAndCountProducts(filters, {
+      take: fetchLimit,
+      skip: fetchOffset,
+      relations: ['variants', 'images', 'categories', 'collection', 'tags'],
     })
+
+    type AnyProduct = Record<string, unknown>
+
+    let products: unknown[]
+    let count: number
+
+    if (originCountry) {
+      const filtered = (allProducts as AnyProduct[]).filter(
+        (p) =>
+          typeof p.origin_country === 'string' &&
+          p.origin_country.toUpperCase() === originCountry.toUpperCase()
+      )
+      count = filtered.length
+      products = filtered.slice(offset, offset + limit)
+    } else {
+      products = allProducts
+      count = totalCount
+    }
 
     res.status(200).json({ products, count })
   } catch (error) {
