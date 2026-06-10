@@ -1,6 +1,6 @@
 import { defineRouteConfig } from '@medusajs/admin-sdk'
 import { Photo } from '@medusajs/icons'
-import { Button, Heading, Input, Label, Select, Text, toast } from '@medusajs/ui'
+import { Button, Heading, Label, Select, Text, toast } from '@medusajs/ui'
 import { useEffect, useRef, useState } from 'react'
 
 type BrandSettings = {
@@ -28,9 +28,8 @@ const BrandSettingsPage = () => {
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [form, setForm] = useState({
-    name: '',
-    watermarkPosition: 'BOTTOM_RIGHT',
-    watermarkOpacity: 0.7,
+    watermarkPosition: 'CENTER',
+    watermarkOpacity: 15,
     watermarkSizePercent: 15,
     watermarkPadding: 20,
   })
@@ -47,11 +46,10 @@ const BrandSettingsPage = () => {
         const data = json.data as BrandSettings
         setSettings(data)
         setForm({
-          name: data.name,
-          watermarkPosition: data.watermarkPosition,
-          watermarkOpacity: data.watermarkOpacity,
-          watermarkSizePercent: data.watermarkSizePercent,
-          watermarkPadding: data.watermarkPadding,
+          watermarkPosition: data.watermarkPosition ?? 'CENTER',
+          watermarkOpacity: Math.round(parseFloat(String(data.watermarkOpacity ?? 0.15)) * 100),
+          watermarkSizePercent: parseInt(String(data.watermarkSizePercent ?? 15)),
+          watermarkPadding: parseInt(String(data.watermarkPadding ?? 20)),
         })
       }
     } catch {
@@ -65,13 +63,21 @@ const BrandSettingsPage = () => {
 
   const handleSave = async () => {
     setSaving(true)
+    // Ensure numeric fields are actual numbers, not strings from range inputs
+    const payload = {
+      ...form,
+      watermarkOpacity: parseFloat((form.watermarkOpacity / 100).toFixed(2)),
+      watermarkSizePercent: parseInt(String(form.watermarkSizePercent)),
+      watermarkPadding: parseInt(String(form.watermarkPadding)),
+    }
+    console.log('[BrandSettings] saving payload:', JSON.stringify(payload))
     try {
       if (settings) {
         await fetch(`/admin/media/brand-settings/${settings.id}`, {
           method: 'PUT',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form),
+          body: JSON.stringify(payload),
         })
         toast.success('Brand settings updated')
       } else {
@@ -79,7 +85,7 @@ const BrandSettingsPage = () => {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(form),
+          body: JSON.stringify({ ...payload, name: 'Default' }),
         })
         toast.success('Brand settings created')
       }
@@ -120,7 +126,7 @@ const BrandSettingsPage = () => {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...form, name: form.name || 'Default', logoUrl }),
+          body: JSON.stringify({ ...form, name: 'Default', logoUrl, watermarkOpacity: parseFloat(String(form.watermarkOpacity)), watermarkSizePercent: parseInt(String(form.watermarkSizePercent)), watermarkPadding: parseInt(String(form.watermarkPadding)) }),
         })
       }
       toast.success('Logo uploaded and saved')
@@ -186,16 +192,6 @@ const BrandSettingsPage = () => {
         <Heading level="h2" className="mb-2">Watermark Settings</Heading>
 
         <div>
-          <Label htmlFor="name" className="mb-1.5 block">Config Name</Label>
-          <Input
-            id="name"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="Default"
-          />
-        </div>
-
-        <div>
           <Label htmlFor="position" className="mb-1.5 block">Position</Label>
           <Select
             value={form.watermarkPosition}
@@ -214,16 +210,16 @@ const BrandSettingsPage = () => {
 
         <div>
           <Label htmlFor="opacity" className="mb-1.5 block">
-            Opacity <span className="text-ui-fg-subtle">({Math.round(form.watermarkOpacity * 100)}%)</span>
+            Opacity <span className="text-ui-fg-subtle">({form.watermarkOpacity}%)</span>
           </Label>
           <input
             id="opacity"
             type="range"
-            min="0.1"
-            max="1"
-            step="0.05"
+            min="1"
+            max="100"
+            step="1"
             value={form.watermarkOpacity}
-            onChange={(e) => setForm({ ...form, watermarkOpacity: parseFloat(e.target.value) })}
+            onChange={(e) => setForm((prev) => ({ ...prev, watermarkOpacity: parseInt(e.target.value) }))}
             className="w-full"
           />
         </div>
@@ -239,7 +235,7 @@ const BrandSettingsPage = () => {
             max="40"
             step="1"
             value={form.watermarkSizePercent}
-            onChange={(e) => setForm({ ...form, watermarkSizePercent: parseInt(e.target.value) })}
+            onChange={(e) => setForm((prev) => ({ ...prev, watermarkSizePercent: parseInt(e.target.value) }))}
             className="w-full"
           />
         </div>
@@ -255,7 +251,7 @@ const BrandSettingsPage = () => {
             max="60"
             step="2"
             value={form.watermarkPadding}
-            onChange={(e) => setForm({ ...form, watermarkPadding: parseInt(e.target.value) })}
+            onChange={(e) => setForm((prev) => ({ ...prev, watermarkPadding: parseInt(e.target.value) }))}
             className="w-full"
           />
         </div>

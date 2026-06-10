@@ -1,6 +1,6 @@
 import { MedusaService } from '@medusajs/framework/utils'
 import sharp from 'sharp'
-import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, DeleteObjectCommand, CopyObjectCommand } from '@aws-sdk/client-s3'
 import { Upload } from '@aws-sdk/lib-storage'
 import { v4 as uuidv4 } from 'uuid'
 import { BrandSettings, WatermarkPosition } from '../models/brand-settings'
@@ -177,6 +177,20 @@ export class MediaModuleService
       throw new NotFoundError('MediaFile', id)
     }
 
+    if (!file.r2Key.startsWith('trash/')) {
+      const trashedAt = Date.now()
+      const trashKey = `trash/${trashedAt}/${file.r2Key}`
+      try {
+        await this.s3Client.send(new CopyObjectCommand({
+          Bucket: this.bucket,
+          CopySource: `${this.bucket}/${encodeURIComponent(file.r2Key).replace(/%2F/g, '/')}`,
+          Key: trashKey,
+        }))
+        logger.info('moveToTrash success', { from: file.r2Key, to: trashKey })
+      } catch (copyErr) {
+        logger.error('moveToTrash failed — skipping trash, deleting directly', { r2Key: file.r2Key, error: copyErr })
+      }
+    }
     await this.s3Client.send(
       new DeleteObjectCommand({ Bucket: this.bucket, Key: file.r2Key })
     )

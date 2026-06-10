@@ -7,6 +7,7 @@ import sharp from 'sharp'
 import { v4 as uuidv4 } from 'uuid'
 import type { Readable, Writable } from 'stream'
 import { PassThrough } from 'stream'
+import { Pool } from 'pg'
 
 type Options = {
   r2Endpoint: string
@@ -41,11 +42,9 @@ class R2FileProviderService extends AbstractFileProviderService {
   private bucket: string
   private publicUrl: string
   private options: Options
-  private container: Record<string, unknown>
 
-  constructor(container: Record<string, unknown>, options: Options) {
+  constructor(_container: Record<string, unknown>, options: Options) {
     super()
-    this.container = container
     this.options = options
     this.publicUrl = options.r2PublicUrl.replace(/\/$/, '')
     this.bucket = options.r2Bucket
@@ -123,7 +122,8 @@ class R2FileProviderService extends AbstractFileProviderService {
       // key format: trash/YYYY-MM-DDTHH:mm:ss.sssZ/<original-key>
       const withoutPrefix = key.replace(/^trash\//, '')
       const slashIdx = withoutPrefix.indexOf('/')
-      const trashedAt = slashIdx > -1 ? withoutPrefix.substring(0, slashIdx) : ''
+      const trashedAtRaw = slashIdx > -1 ? withoutPrefix.substring(0, slashIdx) : ''
+      const trashedAt = trashedAtRaw ? new Date(parseInt(trashedAtRaw)).toISOString() : ''
       const originalKey = slashIdx > -1 ? withoutPrefix.substring(slashIdx + 1) : withoutPrefix
       return {
         key,
@@ -158,7 +158,7 @@ class R2FileProviderService extends AbstractFileProviderService {
       await this.s3.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }))
       return
     }
-    const trashedAt = encodeURIComponent(new Date().toISOString())
+    const trashedAt = Date.now()
     const trashKey = `trash/${trashedAt}/${key}`
     await this.s3.send(new CopyObjectCommand({
       Bucket: this.bucket,
@@ -219,20 +219,27 @@ class R2FileProviderService extends AbstractFileProviderService {
   private async resolveWatermarkConfig(): Promise<WatermarkConfig | null> {
     // 1. Try DB (Brand Settings)
     try {
-      const mediaSvc = this.container['mediaModule'] as any
-      if (mediaSvc) {
-        const settings = await mediaSvc.getActiveBrandSettings()
-        if (settings?.logoUrl) {
-          return {
-            logoUrl: settings.logoUrl,
-            position: settings.watermarkPosition ?? 'CENTER',
-            opacity: settings.watermarkOpacity ?? 0.15,
-            sizePercent: settings.watermarkSizePercent ?? 15,
-            padding: settings.watermarkPadding ?? 20,
-          }
+      const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+      const { rows } = await pool.query(
+        `SELECT "logoUrl", "watermarkPosition", "watermarkOpacity", "watermarkSizePercent", "watermarkPadding"
+         FROM brand_settings
+         WHERE "isActive" = true AND "deleted_at" IS NULL
+         LIMIT 1`
+      )
+      await pool.end()
+      const settings = rows[0]
+      if (settings?.logoUrl) {
+        return {
+          logoUrl: settings.logoUrl,
+          position: settings.watermarkPosition ?? 'CENTER',
+          opacity: parseFloat(settings.watermarkOpacity) ?? 0.15,
+          sizePercent: parseInt(settings.watermarkSizePercent) ?? 15,
+          padding: parseInt(settings.watermarkPadding) ?? 20,
         }
       }
-    } catch { /* media module not available, fall through */ }
+    } catch (e) {
+      console.log('[R2FileProvider] failed to get brand settings from DB:', e)
+    }
 
     // 2. Try env
     if (this.options.watermarkLogoUrl) {
