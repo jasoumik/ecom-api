@@ -26,6 +26,14 @@ const IMAGE_MIMES = new Set([
   'image/webp', 'image/avif', 'image/tiff', 'image/bmp',
 ])
 
+type WatermarkConfig = {
+  logoUrl: string
+  position: string
+  opacity: number
+  sizePercent: number
+  padding: number
+}
+
 class R2FileProviderService extends AbstractFileProviderService {
   static identifier = 'r2'
 
@@ -33,9 +41,11 @@ class R2FileProviderService extends AbstractFileProviderService {
   private bucket: string
   private publicUrl: string
   private options: Options
+  private container: Record<string, unknown>
 
-  constructor(_container: Record<string, unknown>, options: Options) {
+  constructor(container: Record<string, unknown>, options: Options) {
     super()
+    this.container = container
     this.options = options
     this.publicUrl = options.r2PublicUrl.replace(/\/$/, '')
     this.bucket = options.r2Bucket
@@ -206,31 +216,64 @@ class R2FileProviderService extends AbstractFileProviderService {
 
   // ── Image processing ────────────────────────────────────────────────────────
 
+  private async resolveWatermarkConfig(): Promise<WatermarkConfig | null> {
+    // 1. Try DB (Brand Settings)
+    try {
+      const mediaSvc = this.container['mediaModule'] as any
+      if (mediaSvc) {
+        const settings = await mediaSvc.getActiveBrandSettings()
+        if (settings?.logoUrl) {
+          return {
+            logoUrl: settings.logoUrl,
+            position: settings.watermarkPosition ?? 'CENTER',
+            opacity: settings.watermarkOpacity ?? 0.15,
+            sizePercent: settings.watermarkSizePercent ?? 15,
+            padding: settings.watermarkPadding ?? 20,
+          }
+        }
+      }
+    } catch { /* media module not available, fall through */ }
+
+    // 2. Try env
+    if (this.options.watermarkLogoUrl) {
+      return {
+        logoUrl: this.options.watermarkLogoUrl,
+        position: this.options.watermarkPosition ?? 'CENTER',
+        opacity: this.options.watermarkOpacity ?? 0.15,
+        sizePercent: this.options.watermarkSizePercent ?? 15,
+        padding: this.options.watermarkPadding ?? 20,
+      }
+    }
+
+    // 3. No watermark
+    return null
+  }
+
   private async processImage(buffer: Buffer): Promise<Buffer> {
     const webp = await sharp(buffer).webp({ quality: 85, effort: 4 }).toBuffer()
 
-    const logoUrl = this.options.watermarkLogoUrl
-    if (!logoUrl) return webp
+    const config = await this.resolveWatermarkConfig()
+    if (!config) return webp
 
     try {
-      return await this.applyWatermark(webp, logoUrl)
+      return await this.applyWatermark(webp, config)
     } catch {
       return webp
     }
   }
 
-  private async applyWatermark(imageBuffer: Buffer, logoUrl: string): Promise<Buffer> {
+  private async applyWatermark(imageBuffer: Buffer, config: WatermarkConfig): Promise<Buffer> {
     const image = sharp(imageBuffer)
     const { width = 800, height = 800 } = await image.metadata()
 
-    const logoRes = await fetch(logoUrl)
+    const logoRes = await fetch(config.logoUrl)
     if (!logoRes.ok) return imageBuffer
 
     const logoBuffer = Buffer.from(await logoRes.arrayBuffer())
-    const sizePercent = this.options.watermarkSizePercent ?? 15
-    const opacity = this.options.watermarkOpacity ?? 0.7
-    const padding = this.options.watermarkPadding ?? 20
-    const position = this.options.watermarkPosition ?? 'BOTTOM_RIGHT'
+    const sizePercent = config.sizePercent
+    const opacity = config.opacity
+    const padding = config.padding
+    const position = config.position
 
     const watermarkWidth = Math.max(10, Math.round(width * (sizePercent / 100)))
     const resizedLogo = await sharp(logoBuffer).resize(watermarkWidth).ensureAlpha().toBuffer()
