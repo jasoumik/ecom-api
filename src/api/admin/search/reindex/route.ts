@@ -36,7 +36,7 @@ export const POST = async (
         options: { relations: string[]; take: number }
       ) => Promise<ProductItem[]>
     }).listProducts({}, {
-      relations: ['categories', 'variants', 'tags'],
+      relations: ['categories', 'variants', 'variants.prices', 'tags', 'images'],
       take: 10000,
     })
 

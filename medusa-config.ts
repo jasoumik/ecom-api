@@ -16,6 +16,29 @@ module.exports = defineConfig({
   },
   modules: [
     {
+      resolve: "@medusajs/medusa/file",
+      options: {
+        providers: [
+          {
+            resolve: "./src/modules/file-r2",
+            id: "r2",
+            options: {
+              r2Endpoint: process.env.R2_ENDPOINT,
+              r2AccessKeyId: process.env.R2_ACCESS_KEY_ID,
+              r2SecretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+              r2Bucket: process.env.R2_BUCKET,
+              r2PublicUrl: process.env.R2_PUBLIC_URL,
+              watermarkLogoUrl: process.env.R2_WATERMARK_LOGO_URL,
+              watermarkPosition: process.env.R2_WATERMARK_POSITION || "BOTTOM_RIGHT",
+              watermarkOpacity: parseFloat(process.env.R2_WATERMARK_OPACITY || "0.7"),
+              watermarkSizePercent: parseInt(process.env.R2_WATERMARK_SIZE_PERCENT || "15"),
+              watermarkPadding: parseInt(process.env.R2_WATERMARK_PADDING || "20"),
+            },
+          },
+        ],
+      },
+    },
+    {
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [

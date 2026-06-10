@@ -16,6 +16,7 @@ type MedusaProduct = {
   title: string
   description?: string | null
   thumbnail?: string | null
+  images?: Array<{ url: string }>
   metadata?: Record<string, unknown> | null
   categories?: Array<{ id: string; name: string }>
   variants?: MedusaProductVariant[]
@@ -61,7 +62,7 @@ export function mapProductToSearchable(product: MedusaProduct): ISearchableProdu
     handle: product.handle,
     title: product.title,
     description: product.description ?? null,
-    thumbnail: product.thumbnail ?? null,
+    thumbnail: product.thumbnail ?? product.images?.[0]?.url ?? null,
     brand: (product.metadata?.brand as string) ?? null,
     originCountry: (product.metadata?.origin_country as string) ?? null,
     categoryIds: product.categories?.map((c) => c.id) ?? [],
@@ -97,7 +98,7 @@ export default async function productIndexerSubscriber({
       options: { relations: string[] }
     ) => Promise<MedusaProduct>
   }).retrieveProduct(event.data.id, {
-    relations: ['categories', 'variants', 'variants.prices', 'tags'],
+    relations: ['categories', 'variants', 'variants.prices', 'tags', 'images'],
   })
 
   const searchableProduct = mapProductToSearchable(product)
