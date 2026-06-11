@@ -8,6 +8,10 @@ type ServiceAdapter = {
   listBrandSettings(filters?: Record<string, unknown>): Promise<IBrandSettings[]>
   createBrandSettings(data: Record<string, unknown>): Promise<IBrandSettings>
   updateBrandSettings(updates: Array<{ id: string } & Record<string, unknown>>): Promise<IBrandSettings[]>
+
+  listSiteSettings(filters?: Record<string, unknown>): Promise<Array<{ id: string; heroImageUrl: string | null; philosophyImage1Url: string | null; philosophyImage2Url: string | null }>>
+  createSiteSettings(data: Record<string, unknown>): Promise<{ id: string; heroImageUrl: string | null; philosophyImage1Url: string | null; philosophyImage2Url: string | null }>
+  updateSiteSettings(updates: Array<{ id: string } & Record<string, unknown>>): Promise<Array<{ id: string; heroImageUrl: string | null; philosophyImage1Url: string | null; philosophyImage2Url: string | null }>>
 }
 
 export class MediaRepository {
@@ -46,5 +50,21 @@ export class MediaRepository {
   async updateBrandSettings(id: string, data: IUpdateBrandSettingsDTO): Promise<IBrandSettings> {
     const [updated] = await this.svc.updateBrandSettings([{ id, ...data }])
     return updated
+  }
+
+  // ── Site Settings ─────────────────────────────────────────────────────────────
+
+  async getSiteSettings(): Promise<{ id: string; heroImageUrl: string | null; philosophyImage1Url: string | null; philosophyImage2Url: string | null } | null> {
+    const results = await this.svc.listSiteSettings()
+    return results[0] ?? null
+  }
+
+  async upsertSiteSettings(data: Record<string, unknown>): Promise<{ id: string; heroImageUrl: string | null; philosophyImage1Url: string | null; philosophyImage2Url: string | null }> {
+    const existing = await this.getSiteSettings()
+    if (existing) {
+      const [updated] = await this.svc.updateSiteSettings([{ id: existing.id, ...data }])
+      return updated
+    }
+    return this.svc.createSiteSettings(data)
   }
 }

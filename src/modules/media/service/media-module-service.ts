@@ -5,6 +5,7 @@ import { Upload } from '@aws-sdk/lib-storage'
 import { v4 as uuidv4 } from 'uuid'
 import { BrandSettings, WatermarkPosition } from '../models/brand-settings'
 import { MediaFile } from '../models/media-file'
+import { SiteSettings } from '../models/site-settings'
 import { MediaRepository } from '../repository/media.repository'
 import { NotFoundError } from '../../../shared/errors/app-error'
 import { createLogger } from '../../../shared/logger'
@@ -69,7 +70,7 @@ type ProcessedImage = {
 // ── Service ──────────────────────────────────────────────────────────────────
 
 export class MediaModuleService
-  extends MedusaService({ BrandSettings, MediaFile })
+  extends MedusaService({ BrandSettings, MediaFile, SiteSettings })
   implements IMediaService
 {
   private readonly repo: MediaRepository
@@ -243,6 +244,68 @@ export class MediaModuleService
     const r2Key = `brand/watermark/${uuid}.webp`
     const url = await this.uploadToR2(buffer, r2Key, 'image/webp')
     logger.info('uploadBrandLogo success', { r2Key })
+    return url
+  }
+
+  // ── Hero Image ────────────────────────────────────────────────────────────────
+
+  async getHeroImageUrl(): Promise<string | null> {
+    const settings = await this.repo.getSiteSettings()
+    return settings?.heroImageUrl ?? null
+  }
+
+  async setHeroImageUrl(url: string): Promise<void> {
+    await this.repo.upsertSiteSettings({ heroImageUrl: url })
+  }
+
+  async uploadHeroImage(file: IUploadFileDTO): Promise<string> {
+    logger.info('uploadHeroImage', { originalname: file.originalname })
+    const buffer = await sharp(file.buffer).webp({ quality: 90, effort: 4 }).toBuffer()
+    const uuid = uuidv4()
+    const r2Key = `site/hero/${uuid}.webp`
+    const url = await this.uploadToR2(buffer, r2Key, 'image/webp')
+    await this.setHeroImageUrl(url)
+    logger.info('uploadHeroImage success', { r2Key })
+    return url
+  }
+
+  // ── Philosophy Images ─────────────────────────────────────────────────────────
+
+  async getPhilosophyImages(): Promise<{ image1Url: string | null; image2Url: string | null }> {
+    const settings = await this.repo.getSiteSettings()
+    return {
+      image1Url: settings?.philosophyImage1Url ?? null,
+      image2Url: settings?.philosophyImage2Url ?? null,
+    }
+  }
+
+  async setPhilosophyImage1Url(url: string): Promise<void> {
+    await this.repo.upsertSiteSettings({ philosophyImage1Url: url })
+  }
+
+  async setPhilosophyImage2Url(url: string): Promise<void> {
+    await this.repo.upsertSiteSettings({ philosophyImage2Url: url })
+  }
+
+  async uploadPhilosophyImage1(file: IUploadFileDTO): Promise<string> {
+    logger.info('uploadPhilosophyImage1', { originalname: file.originalname })
+    const buffer = await sharp(file.buffer).webp({ quality: 90, effort: 4 }).toBuffer()
+    const uuid = uuidv4()
+    const r2Key = `site/philosophy/1/${uuid}.webp`
+    const url = await this.uploadToR2(buffer, r2Key, 'image/webp')
+    await this.setPhilosophyImage1Url(url)
+    logger.info('uploadPhilosophyImage1 success', { r2Key })
+    return url
+  }
+
+  async uploadPhilosophyImage2(file: IUploadFileDTO): Promise<string> {
+    logger.info('uploadPhilosophyImage2', { originalname: file.originalname })
+    const buffer = await sharp(file.buffer).webp({ quality: 90, effort: 4 }).toBuffer()
+    const uuid = uuidv4()
+    const r2Key = `site/philosophy/2/${uuid}.webp`
+    const url = await this.uploadToR2(buffer, r2Key, 'image/webp')
+    await this.setPhilosophyImage2Url(url)
+    logger.info('uploadPhilosophyImage2 success', { r2Key })
     return url
   }
 
