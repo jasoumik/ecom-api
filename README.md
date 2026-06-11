@@ -75,7 +75,7 @@ Ensure the following are installed and running before starting:
 | Dependency | Version | Check |
 |-----------|---------|-------|
 | Node.js | 20+ | `node --version` |
-| pnpm | 8+ | `pnpm --version` |
+| npm | 10+ | `npm --version` |
 | PostgreSQL | 15+ | `psql --version` |
 | Redis | 7+ | `redis-cli ping` |
 | MeiliSearch | 1+ | `curl http://localhost:7700/health` |
@@ -90,12 +90,6 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 # Install correct Node version
 nvm install 20
 nvm use 20
-```
-
-### Install pnpm
-
-```bash
-npm install -g pnpm
 ```
 
 ### Start PostgreSQL (macOS with Homebrew)
@@ -133,7 +127,7 @@ cd ecom-api
 ### Step 2: Install dependencies
 
 ```bash
-pnpm install
+npm install
 ```
 
 ### Step 3: Set up environment variables
@@ -150,28 +144,32 @@ Edit `.env` with your local credentials. See [Section 5](#5-environment-variable
 createdb beauty_store
 ```
 
-### Step 5: Run database migrations
+### Step 5: Set up and migrate the database
 
 ```bash
-pnpm medusa db:migrate
+npm run db:setup    # first time only — creates schema
+npm run db:migrate  # run migrations
 ```
 
 ### Step 6: Seed the database (optional but recommended for development)
 
 ```bash
-pnpm seed
-```
+# Seed product category tree
+npm run seed
 
-This seeds:
-- All 5 top-level product categories and their subcategories
-- 50+ sample products across all categories
-- Sample combo offers
-- Sample BD landing pages
+# Additional seed scripts (run individually as needed)
+npx medusa exec src/scripts/seed-products.ts
+npx medusa exec src/scripts/seed-brands.ts
+npx medusa exec src/scripts/seed-medusa-core.ts
+npx medusa exec src/scripts/seed-bdt-prices.ts
+npx medusa exec src/scripts/seed-free-shipping-promotion.ts
+npx medusa exec src/scripts/seed-attributes.ts
+```
 
 ### Step 7: Create an admin user
 
 ```bash
-pnpm medusa user -e admin@example.com -p StrongPassword123!
+npx medusa user -e admin@example.com -p StrongPassword123!
 ```
 
 ---
@@ -181,71 +179,58 @@ pnpm medusa user -e admin@example.com -p StrongPassword123!
 Copy `.env.example` to `.env` and fill in all values.
 
 ```bash
-# ─── Server ───────────────────────────────────────────────
+# ─── Node ─────────────────────────────────────────────────
 NODE_ENV=development
-PORT=9000
-MEDUSA_ADMIN_FRONTEND_URL=http://localhost:7001
 
 # ─── Database ─────────────────────────────────────────────
-DATABASE_URL=postgresql://postgres:password@localhost:5432/beauty_store
-DATABASE_LOGGING=false
+DATABASE_URL=postgres://postgres:password@localhost:5432/beauty_store
+DB_NAME=beauty_store
 
 # ─── Redis ────────────────────────────────────────────────
 REDIS_URL=redis://localhost:6379
 
 # ─── MeiliSearch ──────────────────────────────────────────
 MEILISEARCH_HOST=http://localhost:7700
-MEILISEARCH_ADMIN_KEY=your_meilisearch_master_key
+MEILISEARCH_API_KEY=your_meilisearch_master_key
 
 # ─── Auth ─────────────────────────────────────────────────
 JWT_SECRET=change_this_to_a_long_random_string
 COOKIE_SECRET=change_this_to_another_long_random_string
 
-# ─── Stripe (Global Payments) ─────────────────────────────
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
+# ─── CORS ─────────────────────────────────────────────────
+STORE_CORS=http://localhost:3000
+ADMIN_CORS=http://localhost:9000
+AUTH_CORS=http://localhost:3000
 
-# ─── AWS S3 / Cloudflare R2 (File Storage) ────────────────
-S3_BUCKET_NAME=beauty-store-media
-S3_REGION=ap-southeast-1
-S3_ACCESS_KEY_ID=your_access_key
-S3_SECRET_ACCESS_KEY=your_secret_key
-S3_ENDPOINT=                          # Leave blank for AWS; set for R2
-
-# ─── Email ────────────────────────────────────────────────
-SMTP_HOST=smtp.sendgrid.net
-SMTP_PORT=587
-SMTP_USER=apikey
-SMTP_PASS=SG.your_sendgrid_api_key
-FROM_EMAIL=hello@glownest.com
+# ─── Stripe ───────────────────────────────────────────────
+STRIPE_API_KEY=sk_test_...
 
 # ─── bKash (BD Payment) ───────────────────────────────────
 BKASH_APP_KEY=your_bkash_app_key
 BKASH_APP_SECRET=your_bkash_app_secret
 BKASH_USERNAME=your_bkash_username
 BKASH_PASSWORD=your_bkash_password
-BKASH_BASE_URL=https://tokenized.sandbox.bka.sh/v1.2.0-beta
 
 # ─── Nagad (BD Payment) ───────────────────────────────────
 NAGAD_MERCHANT_ID=your_nagad_merchant_id
-NAGAD_MERCHANT_KEY=your_nagad_merchant_key
-NAGAD_BASE_URL=https://api.mynagad.com/api/dfs
+NAGAD_MERCHANT_PRIVATE_KEY=your_nagad_private_key
 
-# ─── Rocket / DBBL (BD Payment) ───────────────────────────
-ROCKET_MERCHANT_ID=your_rocket_merchant_id
-ROCKET_MERCHANT_PASSWORD=your_rocket_password
-ROCKET_BASE_URL=https://sandbox.rocket.com.bd
+# ─── Cloudflare R2 (File Storage) ─────────────────────────
+R2_ENDPOINT=https://YOUR_ACCOUNT_ID.r2.cloudflarestorage.com
+R2_ACCESS_KEY_ID=your_r2_access_key
+R2_SECRET_ACCESS_KEY=your_r2_secret_key
+R2_BUCKET=your_bucket_name
+R2_PUBLIC_URL=https://cdn.yourdomain.com
+R2_WATERMARK_LOGO_URL=https://cdn.yourdomain.com/watermark.png
+R2_WATERMARK_POSITION=bottom-right
+R2_WATERMARK_OPACITY=0.5
+R2_WATERMARK_SIZE_PERCENT=15
+R2_WATERMARK_PADDING=20
 
-# ─── SMS (COD OTP) ────────────────────────────────────────
-SMS_API_KEY=your_sms_api_key
-SMS_SENDER_ID=GlowNest
-
-# ─── CORS ─────────────────────────────────────────────────
-STORE_CORS=http://localhost:3000
-ADMIN_CORS=http://localhost:7001
-
-# ─── WhatsApp ─────────────────────────────────────────────
-WHATSAPP_BUSINESS_NUMBER=+8801XXXXXXXXX
+# ─── Cloudinary ───────────────────────────────────────────
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 > **Security:** Never commit `.env` to version control. The `.gitignore` blocks this by default.
@@ -257,7 +242,7 @@ WHATSAPP_BUSINESS_NUMBER=+8801XXXXXXXXX
 ### Start the development server
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 The Medusa server runs at: **http://localhost:9000**
@@ -274,18 +259,13 @@ The admin panel runs at: **http://localhost:7001**
 
 | Script | Command | Description |
 |--------|---------|-------------|
-| Dev server | `pnpm dev` | Start server with hot reload |
-| Build | `pnpm build` | Compile TypeScript |
-| Start (prod) | `pnpm start` | Start compiled server |
-| Admin | `pnpm admin` | Start Medusa admin UI |
-| Migrations | `pnpm medusa db:migrate` | Run pending migrations |
-| Generate migration | `pnpm medusa db:generate <name>` | Create new migration |
-| Seed | `pnpm seed` | Seed database with sample data |
-| Test | `pnpm test` | Run all tests |
-| Test watch | `pnpm test:watch` | Run tests in watch mode |
-| Lint | `pnpm lint` | Run ESLint |
-| Format | `pnpm format` | Run Prettier |
-| Index products | `pnpm index:products` | Sync all products to MeiliSearch |
+| Dev server | `npm run dev` | Start server with hot reload |
+| Build | `npm run build` | Compile TypeScript |
+| Start (prod) | `npm start` | Start compiled server |
+| Migrations | `npm run db:migrate` | Run pending migrations |
+| DB setup | `npm run db:setup` | Initial schema setup (first run only) |
+| Seed categories | `npm run seed` | Seed product category tree |
+| Test | `npm test` | Run all tests |
 
 ---
 
@@ -534,22 +514,10 @@ const payment = await bdPaymentService.initiate({
 pnpm test
 ```
 
-### Run tests in watch mode
-
-```bash
-pnpm test:watch
-```
-
 ### Run specific test file
 
 ```bash
-pnpm test src/tests/unit/services/category.service.test.ts
-```
-
-### Test coverage
-
-```bash
-pnpm test:coverage
+npm test src/tests/unit/services/category.service.test.ts
 ```
 
 Target: **80% coverage** on all new code.
@@ -558,21 +526,13 @@ Target: **80% coverage** on all new code.
 
 ## 11. Deployment
 
-### Build for production
+See **[DEPLOYMENT.md](../ecom-web/DEPLOYMENT.md)** (or the copy in your frontend repo) for the full guide covering:
 
-```bash
-pnpm build
-```
-
-### Environment variables for production
-
-All variables from `.env.example` must be set in your hosting environment. Change all `sandbox`/`test` values to production equivalents.
-
-### Deploy on Railway
-
-1. Connect GitHub repo to Railway
-2. Set all environment variables in Railway dashboard
-3. Railway auto-deploys on push to `main`
+- VPS setup (PostgreSQL, Redis, MeiliSearch, Nginx, SSL)
+- Backend deploy with PM2
+- All required environment variables
+- CI/CD pipeline via GitHub Actions (`.github/workflows/`)
+- Post-deploy checklist
 
 ### Health check endpoint
 
