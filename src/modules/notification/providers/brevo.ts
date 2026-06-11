@@ -1,4 +1,4 @@
-import { AbstractNotificationProviderService } from "@medusajs/framework/utils"
+import { AbstractNotificationProviderService, ModuleProvider, Modules } from "@medusajs/framework/utils"
 import type {
   ProviderSendNotificationDTO,
   ProviderSendNotificationResultsDTO,
@@ -136,4 +136,6 @@ class BrevoEmailProvider extends AbstractNotificationProviderService {
   }
 }
 
-export default BrevoEmailProvider
+export default ModuleProvider(Modules.NOTIFICATION, {
+  services: [BrevoEmailProvider],
+})

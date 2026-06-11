@@ -1,4 +1,4 @@
-import { AbstractNotificationProviderService } from "@medusajs/framework/utils"
+import { AbstractNotificationProviderService, ModuleProvider, Modules } from "@medusajs/framework/utils"
 import type {
   ProviderSendNotificationDTO,
   ProviderSendNotificationResultsDTO,
@@ -73,4 +73,6 @@ class NetSmsBdProvider extends AbstractNotificationProviderService {
   }
 }
 
-export default NetSmsBdProvider
+export default ModuleProvider(Modules.NOTIFICATION, {
+  services: [NetSmsBdProvider],
+})

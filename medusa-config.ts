@@ -102,5 +102,16 @@ module.exports = defineConfig({
         ],
       },
     },
+    {
+      resolve: "@medusajs/medusa/auth",
+      options: {
+        providers: [
+          {
+            resolve: "./src/modules/auth-otp",
+            id: "otp",
+          },
+        ],
+      },
+    },
   ],
 })
