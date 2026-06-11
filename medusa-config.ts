@@ -70,5 +70,37 @@ module.exports = defineConfig({
         apiKey: process.env.MEILISEARCH_API_KEY,
       },
     },
+    {
+      resolve: "@medusajs/medusa/notification",
+      options: {
+        providers: [
+          {
+            resolve: "./src/modules/notification/providers/brevo",
+            id: "brevo",
+            options: {
+              apiKey: process.env.BREVO_API_KEY,
+              senderEmail: process.env.BREVO_SENDER_EMAIL,
+              senderName: process.env.BREVO_SENDER_NAME,
+              emailProvider: process.env.EMAIL_PROVIDER,
+              smtpHost: process.env.SMTP_HOST,
+              smtpPort: process.env.SMTP_PORT,
+              smtpSecure: process.env.SMTP_SECURE,
+              smtpUser: process.env.SMTP_USER,
+              smtpPass: process.env.SMTP_PASS,
+              smtpFrom: process.env.SMTP_FROM,
+            },
+          },
+          {
+            resolve: "./src/modules/notification/providers/netsmsbd",
+            id: "netsmsbd",
+            options: {
+              apiKey: process.env.NETSMSBD_API_KEY,
+              senderId: process.env.NETSMSBD_SENDER_ID,
+              smsEnabled: process.env.SMS_ENABLED,
+            },
+          },
+        ],
+      },
+    },
   ],
 })

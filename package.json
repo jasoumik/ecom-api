@@ -26,10 +26,12 @@
     "sharp": "^0.33.x",
     "uuid": "^9.x",
     "meilisearch": "^0.44.0",
+    "nodemailer": "^6.9.x",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/nodemailer": "^6.4.x",
     "ts-node": "^10.9.2",
     "typescript": "^5.0.0"
   }
