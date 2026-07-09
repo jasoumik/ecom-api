@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'ecom-api',
+      name: 'rg-api',
       script: 'npm',
       args: 'start',
       instances: 1,
@@ -13,8 +13,8 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 4001,
       },
-      error_file: '/home/jasoumik/logs/ecom-api-error.log',
-      out_file: '/home/jasoumik/logs/ecom-api-out.log',
+      error_file: '/home/jasoumik/logs/rg-api-error.log',
+      out_file: '/home/jasoumik/logs/rg-api-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       merge_logs: true,
     },
