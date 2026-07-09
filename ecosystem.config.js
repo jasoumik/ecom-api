@@ -2,9 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'rg-api',
-      script: 'npm',
-      args: 'start',
-      cwd: '/var/www/html/rg-ecom-api',
+      script: 'index.js',
+      cwd: '/var/www/html/rg-ecom-api/.medusa/server',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
