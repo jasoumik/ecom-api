@@ -4,6 +4,7 @@ module.exports = {
       name: 'rg-api',
       script: 'npm',
       args: 'start',
+      cwd: '/var/www/html/rg-ecom-api',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
