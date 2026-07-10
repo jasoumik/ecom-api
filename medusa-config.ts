@@ -78,6 +78,7 @@ module.exports = defineConfig({
             resolve: "./src/modules/notification/providers/brevo",
             id: "brevo",
             options: {
+              channels: ["email"],
               apiKey: process.env.BREVO_API_KEY,
               senderEmail: process.env.BREVO_SENDER_EMAIL,
               senderName: process.env.BREVO_SENDER_NAME,
@@ -94,6 +95,7 @@ module.exports = defineConfig({
             resolve: "./src/modules/notification/providers/netsmsbd",
             id: "netsmsbd",
             options: {
+              channels: ["sms"],
               apiKey: process.env.NETSMSBD_API_KEY,
               senderId: process.env.NETSMSBD_SENDER_ID,
               smsEnabled: process.env.SMS_ENABLED,
