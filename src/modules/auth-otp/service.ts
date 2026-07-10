@@ -24,7 +24,7 @@ class OTPAuthProvider extends AbstractAuthModuleProvider {
       return { success: false, error: "otp is required" }
     }
 
-    const valid = verifyOtp(identifier, otp)
+    const valid = await verifyOtp(identifier, otp)
     if (!valid) {
       return { success: false, error: "Invalid or expired OTP. Please request a new one." }
     }

@@ -11,7 +11,7 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
 
   const id = identifier.trim()
   const otp = generateOtp()
-  setOtp(id, otp)
+  await setOtp(id, otp)
 
   const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id)
   const notificationService = req.scope.resolve(Modules.NOTIFICATION)
