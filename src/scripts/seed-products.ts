@@ -23,6 +23,30 @@ type ProductSeedData = {
   sale_price_bdt?: number
 }
 
+function inferCategoryHandles(title: string): string[] {
+  const t = title.toLowerCase()
+  const cats: string[] = ['skincare']
+
+  if (t.includes('shampoo') || (t.includes('hair') && !t.includes('skin'))) return ['hair-care', 'shampoo']
+  if (t.includes('body lotion') || t.includes('body cream') || t.includes('body wash')) return ['body-care']
+
+  if (t.includes('sun stick')) { cats.push('sun-stick', 'sunscreen'); return [...new Set(cats)] }
+  if (t.includes('sunscreen') || t.includes('sun cream') || t.includes('spf') || /\buv\b/.test(t)) cats.push('sunscreen')
+  if (t.includes('sheet mask')) { cats.push('sheet-mask', 'face-mask'); return [...new Set(cats)] }
+  if ((t.includes('mask') || t.includes(' pad ') || t.endsWith('pad') || /\bpads?\b/.test(t)) && !t.includes('eye pad')) cats.push('face-mask')
+  if (t.includes('eye')) cats.push('eye-care')
+  if (t.includes('cleansing oil') || t.includes('oil cleanser') || (t.includes('cleansing') && t.includes('oil'))) { cats.push('oil-cleanser', 'cleanser'); return [...new Set(cats)] }
+  if (t.includes('cleansing balm') || t.includes('balm cleanser')) { cats.push('cleansing-balm', 'cleanser'); return [...new Set(cats)] }
+  if (t.includes('foam') || t.includes('cleanser') || t.includes('face wash') || (t.includes('cleansing') && !cats.includes('oil-cleanser'))) cats.push('cleanser')
+  if (t.includes('toner') || t.includes('softener') || (t.includes('essence') && !t.includes('serum'))) cats.push('toner')
+  if (t.includes('ampoule') || t.includes('ampule')) cats.push('ampule')
+  else if (t.includes('serum')) cats.push('serum')
+  if (t.includes('gel') && (t.includes('cream') || t.includes('moisturizer') || t.includes('moisture'))) { cats.push('gel-moisturizer', 'moisturizer'); return [...new Set(cats)] }
+  if (t.includes('cream') || t.includes('moisturizer') || t.includes('lotion') || t.includes('emulsion') || t.includes('barrier')) cats.push('moisturizer')
+
+  return [...new Set(cats)]
+}
+
 const PRODUCTS: ProductSeedData[] = [
   // ── ANUA ──────────────────────────────────────────────────────────────────
   {
@@ -2249,29 +2273,66 @@ export default async function seedProducts({ container }: ExecArgs) {
     collectionByHandle[col.handle] = col.id
   }
 
+  // ── Load categories keyed by handle ────────────────────────────────────
+  const svc = productService as unknown as {
+    listProductCategories: (
+      filters: Record<string, unknown>,
+      options: Record<string, unknown>
+    ) => Promise<Array<{ id: string; handle: string }>>
+  }
+  const allCategories = await svc.listProductCategories({}, { take: 500 })
+  const categoryByHandle: Record<string, string> = {}
+  for (const cat of allCategories) {
+    categoryByHandle[cat.handle] = cat.id
+  }
+
   let created = 0
   let skipped = 0
+  let categorised = 0
   let errors = 0
 
   for (const p of PRODUCTS) {
     try {
+      // Infer category IDs for this product
+      const categoryHandles = inferCategoryHandles(p.title)
+      const categoryIds = categoryHandles
+        .map((h) => categoryByHandle[h])
+        .filter(Boolean) as string[]
+
       // Check if product already exists
-      const existing = await productService.listProducts({ handle: [p.handle] })
+      const existing = await productService.listProducts(
+        { handle: [p.handle] },
+        { relations: ['categories'] }
+      )
+
       if (existing.length > 0) {
         console.log(`  Skipped (exists): ${p.handle}`)
         skipped++
+
+        // Idempotently assign missing categories to existing product
+        const existingCatIds = new Set(
+          ((existing[0] as unknown as { categories?: { id: string }[] }).categories ?? []).map((c) => c.id)
+        )
+        const missingCatIds = categoryIds.filter((id) => !existingCatIds.has(id))
+
+        if (missingCatIds.length > 0) {
+          await productService.updateProducts(existing[0].id, {
+            categories: [...Array.from(existingCatIds), ...missingCatIds].map((id) => ({ id })),
+          })
+          console.log(`    → Assigned ${missingCatIds.length} missing categories: ${categoryHandles.join(', ')}`)
+          categorised++
+        }
         continue
       }
 
       const collectionId = collectionByHandle[p.brand_handle]
-
       if (!collectionId) {
         console.warn(
           `  Warning: brand collection '${p.brand_handle}' not found — run seed-brands.ts first`
         )
       }
 
-      // Create the product
+      // Create the product with categories
       const product = await productService.createProducts([
         {
           title: p.title,
@@ -2281,6 +2342,7 @@ export default async function seedProducts({ container }: ExecArgs) {
           status: "published",
           collection_id: collectionId ?? undefined,
           origin_country: p.origin_country,
+          categories: categoryIds.map((id) => ({ id })),
           images: [],
           options: [
             {
@@ -2306,7 +2368,7 @@ export default async function seedProducts({ container }: ExecArgs) {
         },
       ])
 
-      console.log(`  Created product: ${p.title} (id: ${product[0].id})`)
+      console.log(`  Created product: ${p.title} (id: ${product[0].id}) → [${categoryHandles.join(', ')}]`)
 
       // ── Create price set for this variant ───────────────────────────────
       const variantId = product[0].variants?.[0]?.id
@@ -2355,6 +2417,6 @@ export default async function seedProducts({ container }: ExecArgs) {
   }
 
   console.log(
-    `\nProduct seeding complete. Created: ${created}, Skipped: ${skipped}, Errors: ${errors}`
+    `\nProduct seeding complete. Created: ${created}, Skipped: ${skipped}, Categories updated: ${categorised}, Errors: ${errors}`
   )
 }
