@@ -24,6 +24,9 @@ export const POST = async (
 
     logger.info('Admin triggered full reindex')
 
+    // Configure index settings (filterable/sortable attributes)
+    await searchService.configureIndex()
+
     // Clear the index
     await searchService.reindexAll()
 
