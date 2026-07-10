@@ -13,6 +13,7 @@ module.exports = {
         NODE_ENV: 'production',
         PORT: 4001,
       },
+      env_file: '/var/www/html/rg-ecom-api/.env',
       error_file: '/home/jasoumik/logs/rg-api-error.log',
       out_file: '/home/jasoumik/logs/rg-api-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
