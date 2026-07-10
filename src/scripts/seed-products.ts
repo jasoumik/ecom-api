@@ -2286,6 +2286,13 @@ export default async function seedProducts({ container }: ExecArgs) {
     categoryByHandle[cat.handle] = cat.id
   }
 
+  console.log(`Loaded ${allCategories.length} categories: ${Object.keys(categoryByHandle).join(', ') || '(none — run seed-categories.ts first)'}`)
+
+  if (allCategories.length === 0) {
+    console.error("No categories found. Run: npx medusa exec src/scripts/seed-categories.ts")
+    return
+  }
+
   let created = 0
   let skipped = 0
   let categorised = 0
