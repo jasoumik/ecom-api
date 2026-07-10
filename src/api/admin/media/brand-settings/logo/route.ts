@@ -9,6 +9,7 @@ import { ValidationError } from '../../../../../shared/errors/app-error'
  * POST /admin/media/brand-settings/logo
  *
  * Upload a watermark/logo image. Converts to WebP; no watermark applied.
+ * Automatically saves the resulting URL to the active brand settings record.
  */
 export async function POST(
   req: MedusaRequest,
@@ -40,6 +41,12 @@ export async function POST(
       mimetype: file.mimetype,
       size: file.size,
     })
+
+    // Auto-save logoUrl to the active brand settings record
+    const activeSettings = await mediaService.getActiveBrandSettings()
+    if (activeSettings) {
+      await mediaService.updateBrandConfig(activeSettings.id, { logoUrl: r2Url })
+    }
 
     res.status(201).json({ data: { logo_url: r2Url } })
   } catch (error) {
