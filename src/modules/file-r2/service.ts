@@ -9,6 +9,14 @@ import type { Readable, Writable } from 'stream'
 import { PassThrough } from 'stream'
 import { Pool } from 'pg'
 
+let _pool: Pool | null = null
+function getPool(): Pool {
+  if (!_pool) {
+    _pool = new Pool({ connectionString: process.env.DATABASE_URL })
+  }
+  return _pool
+}
+
 type Options = {
   r2Endpoint: string
   r2AccessKeyId: string
@@ -219,14 +227,12 @@ class R2FileProviderService extends AbstractFileProviderService {
   private async resolveWatermarkConfig(): Promise<WatermarkConfig | null> {
     // 1. Try DB (Brand Settings)
     try {
-      const pool = new Pool({ connectionString: process.env.DATABASE_URL })
-      const { rows } = await pool.query(
+      const { rows } = await getPool().query(
         `SELECT "logoUrl", "watermarkPosition", "watermarkOpacity", "watermarkSizePercent", "watermarkPadding"
          FROM brand_settings
          WHERE "isActive" = true AND "deleted_at" IS NULL
          LIMIT 1`
       )
-      await pool.end()
       const settings = rows[0]
       if (settings?.logoUrl) {
         return {

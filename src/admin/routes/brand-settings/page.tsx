@@ -126,7 +126,14 @@ const BrandSettingsPage = () => {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...form, name: 'Default', logoUrl, watermarkOpacity: parseFloat(String(form.watermarkOpacity)), watermarkSizePercent: parseInt(String(form.watermarkSizePercent)), watermarkPadding: parseInt(String(form.watermarkPadding)) }),
+          body: JSON.stringify({
+            name: 'Default',
+            logoUrl,
+            watermarkPosition: form.watermarkPosition,
+            watermarkOpacity: parseFloat((form.watermarkOpacity / 100).toFixed(2)),
+            watermarkSizePercent: parseInt(String(form.watermarkSizePercent)),
+            watermarkPadding: parseInt(String(form.watermarkPadding)),
+          }),
         })
       }
       toast.success('Logo uploaded and saved')
