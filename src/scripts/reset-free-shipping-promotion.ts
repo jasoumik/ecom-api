@@ -1,31 +1,26 @@
 /**
- * seed-free-shipping-promotion.ts
+ * reset-free-shipping-promotion.ts
  *
- * Creates a Medusa native automatic promotion:
- *   "Free Shipping on orders ≥ ৳2000"
- *
- * - type: standard
- * - is_automatic: true (no code required)
- * - rule: cart subtotal >= 200000 paisa (৳2000)
- * - action: 100% discount on shipping methods
+ * Deletes the existing FREE_SHIPPING_BD promotion and recreates it with the
+ * correct threshold: subtotal >= 2000 (taka — BDT is stored as whole taka in this instance)
  *
  * Run with:
- *   medusa exec src/scripts/seed-free-shipping-promotion.ts
- *
- * To change threshold: update in Medusa Admin → Promotions → Free Shipping
+ *   medusa exec src/scripts/reset-free-shipping-promotion.ts
  */
 
 import { ExecArgs } from '@medusajs/framework/types'
 import { Modules, ContainerRegistrationKeys } from '@medusajs/framework/utils'
 
-export default async function seedFreeShippingPromotion({ container }: ExecArgs) {
+export default async function resetFreeShippingPromotion({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
   const promotionService = container.resolve(Modules.PROMOTION)
 
   const existing = await promotionService.listPromotions({ code: ['FREE_SHIPPING_BD'] })
   if (existing.length > 0) {
-    logger.info('Free shipping promotion already exists. Skipping.')
-    return
+    await promotionService.deletePromotions(existing.map((p: any) => p.id))
+    logger.info(`Deleted existing promotion: ${existing[0].id}`)
+  } else {
+    logger.info('No existing promotion found — creating fresh.')
   }
 
   const promotion = await promotionService.createPromotions({
@@ -52,8 +47,6 @@ export default async function seedFreeShippingPromotion({ container }: ExecArgs)
 
   logger.info(`✓ Created free shipping promotion: ${promotion.id}`)
   logger.info('  Code: FREE_SHIPPING_BD (automatic — no code needed)')
-  logger.info('  Threshold: ৳2000 (200000 paisa)')
+  logger.info('  Threshold: subtotal >= 2000 (৳2000)')
   logger.info('  Action: 100% discount on shipping')
-  logger.info('')
-  logger.info('To change the threshold: Medusa Admin → Promotions → Free Shipping BD → edit rule')
 }
