@@ -39,6 +39,7 @@ export class SearchModuleService implements ISearchService {
       ],
       filterableAttributes: [
         'categoryIds',
+        'categoryNames',
         'brand',
         'originCountry',
         'price',
