@@ -2317,7 +2317,7 @@ export default async function seedProducts({ container }: ExecArgs) {
 
         if (missingCatIds.length > 0) {
           await productService.updateProducts(existing[0].id, {
-            categories: [...Array.from(existingCatIds), ...missingCatIds].map((id) => ({ id })),
+            category_ids: [...Array.from(existingCatIds), ...missingCatIds],
           })
           console.log(`    → Assigned ${missingCatIds.length} missing categories: ${categoryHandles.join(', ')}`)
           categorised++
@@ -2342,7 +2342,7 @@ export default async function seedProducts({ container }: ExecArgs) {
           status: "published",
           collection_id: collectionId ?? undefined,
           origin_country: p.origin_country,
-          categories: categoryIds.map((id) => ({ id })),
+          category_ids: categoryIds,
           images: [],
           options: [
             {
