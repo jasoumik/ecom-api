@@ -8,7 +8,7 @@ export function passwordResetEmail(data: PasswordResetEmailData): {
   html: string
   text: string
 } {
-  const subject = "Reset your GlowNest password"
+  const subject = "Reset your Replant Glow password"
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -26,7 +26,7 @@ export function passwordResetEmail(data: PasswordResetEmailData): {
           <!-- Header -->
           <tr>
             <td style="background-color: #C2185B; padding: 20px 32px; border-radius: 8px 8px 0 0;">
-              <span style="color: #ffffff; font-size: 24px; font-weight: bold; letter-spacing: 1px;">GlowNest</span>
+              <span style="color: #ffffff; font-size: 24px; font-weight: bold; letter-spacing: 1px;">Replant Glow</span>
             </td>
           </tr>
 
@@ -35,7 +35,7 @@ export function passwordResetEmail(data: PasswordResetEmailData): {
             <td style="background-color: #ffffff; padding: 32px;">
               <h1 style="margin: 0 0 8px 0; font-size: 22px; color: #1a1a1a;">Reset Your Password</h1>
               <p style="margin: 0 0 16px 0; font-size: 15px; color: #555; line-height: 1.6;">
-                Hi ${data.first_name}, we received a request to reset the password for your GlowNest account.
+                Hi ${data.first_name}, we received a request to reset the password for your Replant Glow account.
               </p>
               <p style="margin: 0 0 24px 0; font-size: 15px; color: #555; line-height: 1.6;">
                 Click the button below to set a new password. This link is valid for 30 minutes.
@@ -54,7 +54,7 @@ export function passwordResetEmail(data: PasswordResetEmailData): {
           <!-- Footer -->
           <tr>
             <td style="background-color: #f5f5f5; padding: 20px 32px; border-radius: 0 0 8px 8px; text-align: center;">
-              <p style="margin: 0 0 4px 0; font-size: 12px; color: #999;">GlowNest — Beauty &amp; Baby Care, Bangladesh</p>
+              <p style="margin: 0 0 4px 0; font-size: 12px; color: #999;">Replant Glow — Beauty &amp; Baby Care, Bangladesh</p>
               <p style="margin: 0; font-size: 12px; color: #bbb;">You received this email because a password reset was requested for your account.</p>
             </td>
           </tr>
@@ -68,13 +68,13 @@ export function passwordResetEmail(data: PasswordResetEmailData): {
 
   const text = `Hi ${data.first_name},
 
-We received a request to reset your GlowNest password.
+We received a request to reset your Replant Glow password.
 
 Reset your password here: ${data.reset_link}
 
 This link is valid for 30 minutes. If you did not request this, you can safely ignore this email.
 
-— GlowNest`
+— Replant Glow`
 
   return { subject, html, text }
 }

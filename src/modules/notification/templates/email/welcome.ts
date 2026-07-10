@@ -7,7 +7,7 @@ export function welcomeEmail(data: WelcomeEmailData): {
   html: string
   text: string
 } {
-  const subject = `Welcome to GlowNest, ${data.first_name}!`
+  const subject = `Welcome to Replant Glow, ${data.first_name}!`
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -25,7 +25,7 @@ export function welcomeEmail(data: WelcomeEmailData): {
           <!-- Header -->
           <tr>
             <td style="background-color: #C2185B; padding: 20px 32px; border-radius: 8px 8px 0 0;">
-              <span style="color: #ffffff; font-size: 24px; font-weight: bold; letter-spacing: 1px;">GlowNest</span>
+              <span style="color: #ffffff; font-size: 24px; font-weight: bold; letter-spacing: 1px;">Replant Glow</span>
             </td>
           </tr>
 
@@ -34,7 +34,7 @@ export function welcomeEmail(data: WelcomeEmailData): {
             <td style="background-color: #ffffff; padding: 32px;">
               <h1 style="margin: 0 0 8px 0; font-size: 22px; color: #1a1a1a;">Welcome, ${data.first_name}! 🌸</h1>
               <p style="margin: 0 0 16px 0; font-size: 15px; color: #555; line-height: 1.6;">
-                We're so happy to have you as part of the GlowNest family — your go-to destination for beauty and baby care products in Bangladesh.
+                We're so happy to have you as part of the Replant Glow family — your go-to destination for beauty and baby care products in Bangladesh.
               </p>
               <p style="margin: 0 0 24px 0; font-size: 15px; color: #555; line-height: 1.6;">
                 Browse our curated collection and enjoy a seamless shopping experience, fast delivery, and trusted brands — all in one place.
@@ -49,8 +49,8 @@ export function welcomeEmail(data: WelcomeEmailData): {
           <!-- Footer -->
           <tr>
             <td style="background-color: #f5f5f5; padding: 20px 32px; border-radius: 0 0 8px 8px; text-align: center;">
-              <p style="margin: 0 0 4px 0; font-size: 12px; color: #999;">GlowNest — Beauty &amp; Baby Care, Bangladesh</p>
-              <p style="margin: 0; font-size: 12px; color: #bbb;">You received this email because you created an account on GlowNest.</p>
+              <p style="margin: 0 0 4px 0; font-size: 12px; color: #999;">Replant Glow — Beauty &amp; Baby Care, Bangladesh</p>
+              <p style="margin: 0; font-size: 12px; color: #bbb;">You received this email because you created an account on Replant Glow.</p>
             </td>
           </tr>
 
@@ -61,11 +61,11 @@ export function welcomeEmail(data: WelcomeEmailData): {
 </body>
 </html>`
 
-  const text = `Welcome to GlowNest, ${data.first_name}!
+  const text = `Welcome to Replant Glow, ${data.first_name}!
 
 We're thrilled to have you as part of our community. Start exploring our collection of beauty and baby care products today.
 
-Thank you for joining GlowNest!`
+Thank you for joining Replant Glow!`
 
   return { subject, html, text }
 }

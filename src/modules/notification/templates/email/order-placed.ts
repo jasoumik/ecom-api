@@ -25,7 +25,7 @@ export function orderPlacedEmail(order: OrderPlacedEmailData): {
   html: string
   text: string
 } {
-  const subject = `Order Confirmed — #${order.display_id} | GlowNest`
+  const subject = `Order Confirmed — #${order.display_id} | Replant Glow`
 
   const itemRows = order.items
     .map(
@@ -54,7 +54,7 @@ export function orderPlacedEmail(order: OrderPlacedEmailData): {
           <!-- Header -->
           <tr>
             <td style="background-color: #C2185B; padding: 20px 32px; border-radius: 8px 8px 0 0;">
-              <span style="color: #ffffff; font-size: 24px; font-weight: bold; letter-spacing: 1px;">GlowNest</span>
+              <span style="color: #ffffff; font-size: 24px; font-weight: bold; letter-spacing: 1px;">Replant Glow</span>
             </td>
           </tr>
 
@@ -127,8 +127,8 @@ export function orderPlacedEmail(order: OrderPlacedEmailData): {
           <!-- Footer -->
           <tr>
             <td style="background-color: #f5f5f5; padding: 20px 32px; border-radius: 0 0 8px 8px; text-align: center;">
-              <p style="margin: 0 0 4px 0; font-size: 12px; color: #999;">GlowNest — Beauty &amp; Baby Care, Bangladesh</p>
-              <p style="margin: 0; font-size: 12px; color: #bbb;">You received this email because you placed an order on GlowNest.</p>
+              <p style="margin: 0 0 4px 0; font-size: 12px; color: #999;">Replant Glow — Beauty &amp; Baby Care, Bangladesh</p>
+              <p style="margin: 0; font-size: 12px; color: #bbb;">You received this email because you placed an order on Replant Glow.</p>
             </td>
           </tr>
 
@@ -154,7 +154,7 @@ Total: ৳${order.total}
 Shipping to: ${order.shipping_address.address_1}, ${order.shipping_address.city}
 Payment: ${order.payment_method}
 
-Thank you for shopping with GlowNest!`
+Thank you for shopping with Replant Glow!`
 
   return { subject, html, text }
 }

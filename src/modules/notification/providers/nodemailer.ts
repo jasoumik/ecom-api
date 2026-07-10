@@ -36,7 +36,7 @@ export async function sendNodemailerEmail(params: NodemailerEmailParams): Promis
     })
   }
 
-  const from = process.env.SMTP_FROM || '"GlowNest" <noreply@glownest.com>'
+  const from = process.env.SMTP_FROM || '"Replant Glow" <noreply@replantglow.com>'
 
   try {
     const info = await transporter.sendMail({

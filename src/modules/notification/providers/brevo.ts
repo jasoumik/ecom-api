@@ -44,8 +44,7 @@ class BrevoEmailProvider extends AbstractNotificationProviderService {
   private async sendViaBrevo(to: string, subject: string, html: string, text: string): Promise<string | undefined> {
     const apiKey = this.options_.apiKey
     if (!apiKey) {
-      console.error("[BrevoProvider] BREVO_API_KEY not set")
-      return undefined
+      throw new Error("[BrevoProvider] BREVO_API_KEY not set")
     }
 
     const response = await fetch("https://api.brevo.com/v3/smtp/email", {
@@ -57,8 +56,8 @@ class BrevoEmailProvider extends AbstractNotificationProviderService {
       },
       body: JSON.stringify({
         sender: {
-          name: this.options_.senderName || "GlowNest",
-          email: this.options_.senderEmail || "noreply@glownest.com",
+          name: this.options_.senderName || "Replant Glow",
+          email: this.options_.senderEmail || "noreply@replantglow.com",
         },
         to: [{ email: to }],
         subject,
@@ -100,7 +99,7 @@ class BrevoEmailProvider extends AbstractNotificationProviderService {
       })
     }
 
-    const from = this.options_.smtpFrom || '"GlowNest" <noreply@glownest.com>'
+    const from = this.options_.smtpFrom || '"Replant Glow" <noreply@replantglow.com>'
     const info = await transporter.sendMail({ from, to, subject, html, text })
 
     if (!this.options_.smtpHost) {

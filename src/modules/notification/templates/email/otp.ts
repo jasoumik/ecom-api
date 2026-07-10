@@ -8,7 +8,7 @@ export function otpEmail(data: OtpEmailData): {
   html: string
   text: string
 } {
-  const subject = `Your GlowNest verification code: ${data.otp}`
+  const subject = `Your Replant Glow verification code: ${data.otp}`
   const greeting = data.first_name ? `Hi ${data.first_name},` : "Hello,"
 
   const html = `<!DOCTYPE html>
@@ -27,7 +27,7 @@ export function otpEmail(data: OtpEmailData): {
           <!-- Header -->
           <tr>
             <td style="background-color: #C2185B; padding: 20px 32px; border-radius: 8px 8px 0 0;">
-              <span style="color: #ffffff; font-size: 24px; font-weight: bold; letter-spacing: 1px;">GlowNest</span>
+              <span style="color: #ffffff; font-size: 24px; font-weight: bold; letter-spacing: 1px;">Replant Glow</span>
             </td>
           </tr>
 
@@ -44,7 +44,7 @@ export function otpEmail(data: OtpEmailData): {
               </div>
 
               <p style="margin: 0; font-size: 13px; color: #999; line-height: 1.6;">
-                Do not share this code with anyone. GlowNest will never ask for this code.
+                Do not share this code with anyone. Replant Glow will never ask for this code.
               </p>
             </td>
           </tr>
@@ -52,7 +52,7 @@ export function otpEmail(data: OtpEmailData): {
           <!-- Footer -->
           <tr>
             <td style="background-color: #f5f5f5; padding: 20px 32px; border-radius: 0 0 8px 8px; text-align: center;">
-              <p style="margin: 0 0 4px 0; font-size: 12px; color: #999;">GlowNest — Beauty &amp; Baby Care, Bangladesh</p>
+              <p style="margin: 0 0 4px 0; font-size: 12px; color: #999;">Replant Glow — Beauty &amp; Baby Care, Bangladesh</p>
               <p style="margin: 0; font-size: 12px; color: #bbb;">You received this email because a verification was requested on your account.</p>
             </td>
           </tr>
@@ -66,11 +66,11 @@ export function otpEmail(data: OtpEmailData): {
 
   const text = `${greeting}
 
-Your GlowNest verification code is: ${data.otp}
+Your Replant Glow verification code is: ${data.otp}
 
 This code is valid for 5 minutes. Do not share it with anyone.
 
-— GlowNest`
+— Replant Glow`
 
   return { subject, html, text }
 }
