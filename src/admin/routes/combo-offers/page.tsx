@@ -9,6 +9,7 @@ type ComboItem = {
   quantity: number
   productTitle?: string
   productThumb?: string
+  productPrice?: number // whole taka BDT
 }
 
 type ComboOffer = {
@@ -23,10 +24,16 @@ type ComboOffer = {
   items?: ComboItem[]
 }
 
+type ProductVariant = {
+  id: string
+  prices?: { amount: number; currency_code: string }[]
+}
+
 type Product = {
   id: string
   title: string
   thumbnail: string | null
+  variants?: ProductVariant[]
 }
 
 const EMPTY_FORM = {
@@ -50,6 +57,14 @@ const discountPct = (comboPrice: number, originalPrice: number) => {
   return pct > 0 ? pct : null
 }
 
+// Extract BDT price from product variants (whole taka, decimal_digits=0)
+const getBdtPrice = (product: Product): number => {
+  const variant = product.variants?.[0]
+  if (!variant) return 0
+  const bdtPrice = variant.prices?.find((p) => p.currency_code === 'bdt')
+  return bdtPrice?.amount ?? 0
+}
+
 const ComboOffersPage = () => {
   const [combos, setCombos] = useState<ComboOffer[]>([])
   const [loading, setLoading] = useState(true)
@@ -62,6 +77,7 @@ const ComboOffersPage = () => {
   const [productSearch, setProductSearch] = useState('')
   const [productResults, setProductResults] = useState<Product[]>([])
   const [searching, setSearching] = useState(false)
+  const [originalPriceManual, setOriginalPriceManual] = useState(false)
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // ── Fetch all combos ──────────────────────────────────────────────────────
@@ -82,6 +98,15 @@ const ComboOffersPage = () => {
     fetchCombos()
   }, [])
 
+  // ── Auto-calculate original price from items ──────────────────────────────
+  useEffect(() => {
+    if (originalPriceManual) return
+    const total = items.reduce((sum, it) => sum + (it.productPrice ?? 0) * it.quantity, 0)
+    if (total > 0) {
+      setForm((prev) => ({ ...prev, originalPrice: String(total) }))
+    }
+  }, [items, originalPriceManual])
+
   // ── Product search (debounced) ────────────────────────────────────────────
   useEffect(() => {
     if (!productSearch.trim()) {
@@ -93,7 +118,7 @@ const ComboOffersPage = () => {
       setSearching(true)
       try {
         const res = await fetch(
-          `/admin/products?q=${encodeURIComponent(productSearch)}&limit=10&fields=id,title,thumbnail`,
+          `/admin/products?q=${encodeURIComponent(productSearch)}&limit=10&fields=id,title,thumbnail,variants,variants.prices`,
           { credentials: 'include' },
         )
         const json = await res.json()
@@ -111,6 +136,7 @@ const ComboOffersPage = () => {
     setEditId(null)
     setForm(EMPTY_FORM)
     setItems([])
+    setOriginalPriceManual(false)
     setProductSearch('')
     setProductResults([])
     setShowForm(true)
@@ -124,9 +150,9 @@ const ComboOffersPage = () => {
       description: combo.description ?? '',
       comboPrice: String(combo.comboPrice),
       originalPrice: String(combo.originalPrice),
-      isActive: combo.isActive as unknown as boolean,
+      isActive: combo.isActive,
     })
-    // Fetch items for this combo
+    setOriginalPriceManual(true) // editing existing — don't overwrite
     try {
       const res = await fetch(`/admin/combos/${combo.id}`, { credentials: 'include' })
       const json = await res.json()
@@ -138,6 +164,7 @@ const ComboOffersPage = () => {
           quantity: it.quantity,
           productTitle: it.productTitle,
           productThumb: it.productThumb,
+          productPrice: it.productPrice,
         })),
       )
     } catch {
@@ -153,6 +180,7 @@ const ComboOffersPage = () => {
     setEditId(null)
     setForm(EMPTY_FORM)
     setItems([])
+    setOriginalPriceManual(false)
     setProductSearch('')
     setProductResults([])
   }
@@ -161,7 +189,6 @@ const ComboOffersPage = () => {
     setForm((prev) => ({
       ...prev,
       name: value,
-      // auto-update slug only if user hasn't manually set it (or it still matches slugified name)
       slug: prev.slug === slugify(prev.name) || prev.slug === '' ? slugify(value) : prev.slug,
     }))
   }
@@ -171,9 +198,16 @@ const ComboOffersPage = () => {
       toast.error('Product already added')
       return
     }
+    const price = getBdtPrice(product)
     setItems((prev) => [
       ...prev,
-      { productId: product.id, quantity: 1, productTitle: product.title, productThumb: product.thumbnail ?? undefined },
+      {
+        productId: product.id,
+        quantity: 1,
+        productTitle: product.title,
+        productThumb: product.thumbnail ?? undefined,
+        productPrice: price,
+      },
     ])
     setProductSearch('')
     setProductResults([])
@@ -189,18 +223,9 @@ const ComboOffersPage = () => {
 
   // ── Save ──────────────────────────────────────────────────────────────────
   const handleSave = async () => {
-    if (!form.name.trim()) {
-      toast.error('Name is required')
-      return
-    }
-    if (!form.slug.trim()) {
-      toast.error('Slug is required')
-      return
-    }
-    if (!form.comboPrice || Number(form.comboPrice) <= 0) {
-      toast.error('Combo price must be greater than 0')
-      return
-    }
+    if (!form.name.trim()) { toast.error('Name is required'); return }
+    if (!form.slug.trim()) { toast.error('Slug is required'); return }
+    if (!form.comboPrice || Number(form.comboPrice) <= 0) { toast.error('Combo price must be greater than 0'); return }
 
     setSaving(true)
     try {
@@ -237,7 +262,6 @@ const ComboOffersPage = () => {
 
       if (!comboId) throw new Error('No combo ID returned')
 
-      // Save items (replaces all)
       if (items.length > 0) {
         const itemsRes = await fetch(`/admin/combos/${comboId}/items`, {
           method: 'POST',
@@ -265,10 +289,7 @@ const ComboOffersPage = () => {
     if (!window.confirm(`Delete combo "${name}"? This cannot be undone.`)) return
     setDeleting(id)
     try {
-      const res = await fetch(`/admin/combos/${id}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      })
+      const res = await fetch(`/admin/combos/${id}`, { method: 'DELETE', credentials: 'include' })
       if (!res.ok) throw new Error('Failed to delete combo')
       toast.success('Combo deleted')
       fetchCombos()
@@ -278,6 +299,9 @@ const ComboOffersPage = () => {
       setDeleting(null)
     }
   }
+
+  // ── Computed ──────────────────────────────────────────────────────────────
+  const autoOriginalPrice = items.reduce((sum, it) => sum + (it.productPrice ?? 0) * it.quantity, 0)
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -289,9 +313,7 @@ const ComboOffersPage = () => {
           <Text className="text-ui-fg-subtle mt-1">Manage bundled product combos with special pricing.</Text>
         </div>
         {!showForm && (
-          <Button onClick={openCreate} size="small">
-            + New Combo
-          </Button>
+          <Button onClick={openCreate} size="small">+ New Combo</Button>
         )}
       </div>
 
@@ -302,8 +324,8 @@ const ComboOffersPage = () => {
             {editId ? 'Edit Combo' : 'Create Combo'}
           </Heading>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {/* Name */}
+          {/* Name + Slug */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mb-4">
             <div>
               <Label htmlFor="combo-name" className="mb-1.5 block">
                 Name <span className="text-ui-fg-error">*</span>
@@ -315,8 +337,6 @@ const ComboOffersPage = () => {
                 placeholder="e.g. Summer Bundle"
               />
             </div>
-
-            {/* Slug */}
             <div>
               <Label htmlFor="combo-slug" className="mb-1.5 block">
                 Slug <span className="text-ui-fg-error">*</span>
@@ -328,60 +348,23 @@ const ComboOffersPage = () => {
                 placeholder="summer-bundle"
               />
             </div>
-
-            {/* Combo Price */}
-            <div>
-              <Label htmlFor="combo-price" className="mb-1.5 block">
-                Combo Price ৳ <span className="text-ui-fg-error">*</span>
-              </Label>
-              <Input
-                id="combo-price"
-                type="number"
-                min="0"
-                value={form.comboPrice}
-                onChange={(e) => setForm((prev) => ({ ...prev, comboPrice: e.target.value }))}
-                placeholder="0"
-              />
-            </div>
-
-            {/* Original Price */}
-            <div>
-              <Label htmlFor="original-price" className="mb-1.5 block">
-                Original Price ৳
-                {form.comboPrice && form.originalPrice && Number(form.originalPrice) > 0 && (
-                  <span className="ml-2 text-ui-fg-subtle text-xs">
-                    ({discountPct(Number(form.comboPrice), Number(form.originalPrice)) ?? 0}% off)
-                  </span>
-                )}
-              </Label>
-              <Input
-                id="original-price"
-                type="number"
-                min="0"
-                value={form.originalPrice}
-                onChange={(e) => setForm((prev) => ({ ...prev, originalPrice: e.target.value }))}
-                placeholder="0"
-              />
-            </div>
           </div>
 
           {/* Description */}
-          <div className="mt-4">
-            <Label htmlFor="combo-desc" className="mb-1.5 block">
-              Description
-            </Label>
+          <div className="mb-4">
+            <Label htmlFor="combo-desc" className="mb-1.5 block">Description</Label>
             <textarea
               id="combo-desc"
               value={form.description}
               onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
               placeholder="Optional description…"
-              rows={3}
+              rows={2}
               className="w-full rounded-md border border-ui-border-base bg-ui-bg-field px-3 py-2 text-sm text-ui-fg-base placeholder:text-ui-fg-muted focus:border-ui-border-interactive focus:outline-none resize-none"
             />
           </div>
 
           {/* Active toggle */}
-          <div className="mt-4 flex items-center gap-x-3">
+          <div className="mb-6 flex items-center gap-x-3">
             <Switch
               id="combo-active"
               checked={form.isActive}
@@ -390,10 +373,12 @@ const ComboOffersPage = () => {
             <Label htmlFor="combo-active">Active</Label>
           </div>
 
-          {/* Product search */}
-          <div className="mt-6">
-            <Label className="mb-2 block">Products</Label>
-            <div className="relative">
+          {/* ── Products (before prices) ─────────────────────────────────── */}
+          <div className="mb-6">
+            <Label className="mb-2 block text-base font-semibold">Products</Label>
+
+            {/* Search */}
+            <div className="relative mb-3">
               <div className="flex items-center gap-2 rounded-md border border-ui-border-base bg-ui-bg-field px-3 py-2">
                 <MagnifyingGlass className="text-ui-fg-muted shrink-0" />
                 <input
@@ -406,76 +391,154 @@ const ComboOffersPage = () => {
                 {searching && <span className="text-xs text-ui-fg-muted">Searching…</span>}
               </div>
 
-              {/* Search results dropdown */}
               {productResults.length > 0 && (
                 <div className="absolute z-10 mt-1 w-full rounded-md border border-ui-border-base bg-ui-bg-base shadow-lg">
-                  {productResults.map((product) => (
-                    <button
-                      key={product.id}
-                      type="button"
-                      onClick={() => addProduct(product)}
-                      className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-ui-bg-base-hover transition-colors"
-                    >
-                      {product.thumbnail ? (
-                        <img
-                          src={product.thumbnail}
-                          alt={product.title}
-                          className="h-8 w-8 rounded object-cover border border-ui-border-base shrink-0"
-                        />
-                      ) : (
-                        <div className="h-8 w-8 rounded bg-ui-bg-subtle border border-ui-border-base shrink-0" />
-                      )}
-                      <span className="text-ui-fg-base truncate">{product.title}</span>
-                    </button>
-                  ))}
+                  {productResults.map((product) => {
+                    const price = getBdtPrice(product)
+                    return (
+                      <button
+                        key={product.id}
+                        type="button"
+                        onClick={() => addProduct(product)}
+                        className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-ui-bg-base-hover transition-colors"
+                      >
+                        {product.thumbnail ? (
+                          <img
+                            src={product.thumbnail}
+                            alt={product.title}
+                            className="h-8 w-8 rounded object-cover border border-ui-border-base shrink-0"
+                          />
+                        ) : (
+                          <div className="h-8 w-8 rounded bg-ui-bg-subtle border border-ui-border-base shrink-0" />
+                        )}
+                        <span className="flex-1 text-ui-fg-base truncate">{product.title}</span>
+                        {price > 0 && (
+                          <span className="text-xs text-ui-fg-subtle shrink-0">৳{price.toLocaleString()}</span>
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
               )}
             </div>
+
+            {/* Items list */}
+            {items.length > 0 ? (
+              <div className="space-y-2">
+                {items.map((item) => (
+                  <div
+                    key={item.productId}
+                    className="flex items-center gap-3 rounded-md border border-ui-border-base bg-ui-bg-subtle px-3 py-2"
+                  >
+                    {item.productThumb ? (
+                      <img
+                        src={item.productThumb}
+                        alt={item.productTitle}
+                        className="h-9 w-9 rounded object-cover border border-ui-border-base shrink-0"
+                      />
+                    ) : (
+                      <div className="h-9 w-9 rounded bg-ui-bg-base border border-ui-border-base shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-ui-fg-base truncate">{item.productTitle ?? item.productId}</p>
+                      {item.productPrice != null && item.productPrice > 0 && (
+                        <p className="text-xs text-ui-fg-subtle">
+                          ৳{item.productPrice.toLocaleString()} × {item.quantity} = ৳{(item.productPrice * item.quantity).toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Label className="text-xs text-ui-fg-subtle">Qty</Label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) => updateItemQty(item.productId, Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-14 rounded border border-ui-border-base bg-ui-bg-field px-2 py-1 text-xs text-center focus:outline-none focus:border-ui-border-interactive"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.productId)}
+                      className="text-ui-fg-muted hover:text-ui-fg-error transition-colors shrink-0"
+                    >
+                      <XMark />
+                    </button>
+                  </div>
+                ))}
+
+                {/* Items total */}
+                {autoOriginalPrice > 0 && (
+                  <div className="flex justify-end pt-1">
+                    <span className="text-sm text-ui-fg-subtle">
+                      Total (all items): <strong className="text-ui-fg-base">৳{autoOriginalPrice.toLocaleString()}</strong>
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Text className="text-ui-fg-muted text-sm">No products added yet. Search above to add products.</Text>
+            )}
           </div>
 
-          {/* Items list */}
-          {items.length > 0 && (
-            <div className="mt-4 space-y-2">
-              {items.map((item) => (
-                <div
-                  key={item.productId}
-                  className="flex items-center gap-3 rounded-md border border-ui-border-base bg-ui-bg-subtle px-3 py-2"
-                >
-                  {item.productThumb ? (
-                    <img
-                      src={item.productThumb}
-                      alt={item.productTitle}
-                      className="h-8 w-8 rounded object-cover border border-ui-border-base shrink-0"
-                    />
-                  ) : (
-                    <div className="h-8 w-8 rounded bg-ui-bg-base border border-ui-border-base shrink-0" />
+          {/* ── Pricing (after products) ─────────────────────────────────── */}
+          <div className="border-t border-ui-border-base pt-5">
+            <Label className="mb-3 block text-base font-semibold">Pricing</Label>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* Original price — auto-filled from items, editable */}
+              <div>
+                <Label htmlFor="original-price" className="mb-1.5 block">
+                  Original Price ৳
+                  {autoOriginalPrice > 0 && !originalPriceManual && (
+                    <span className="ml-2 text-xs text-ui-fg-subtle">(auto-calculated)</span>
                   )}
-                  <span className="flex-1 text-sm text-ui-fg-base truncate">{item.productTitle ?? item.productId}</span>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <Label className="text-xs text-ui-fg-subtle">Qty</Label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={item.quantity}
-                      onChange={(e) => updateItemQty(item.productId, Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-14 rounded border border-ui-border-base bg-ui-bg-field px-2 py-1 text-xs text-center focus:outline-none focus:border-ui-border-interactive"
-                    />
-                  </div>
+                </Label>
+                <Input
+                  id="original-price"
+                  type="number"
+                  min="0"
+                  value={form.originalPrice}
+                  onChange={(e) => {
+                    setOriginalPriceManual(true)
+                    setForm((prev) => ({ ...prev, originalPrice: e.target.value }))
+                  }}
+                  placeholder="0"
+                />
+                {originalPriceManual && autoOriginalPrice > 0 && (
                   <button
                     type="button"
-                    onClick={() => removeItem(item.productId)}
-                    className="text-ui-fg-muted hover:text-ui-fg-error transition-colors shrink-0"
+                    onClick={() => {
+                      setOriginalPriceManual(false)
+                      setForm((prev) => ({ ...prev, originalPrice: String(autoOriginalPrice) }))
+                    }}
+                    className="mt-1 text-xs text-ui-fg-interactive hover:underline"
                   >
-                    <XMark />
+                    Reset to auto (৳{autoOriginalPrice.toLocaleString()})
                   </button>
-                </div>
-              ))}
-            </div>
-          )}
+                )}
+              </div>
 
-          {items.length === 0 && (
-            <Text className="mt-3 text-ui-fg-muted text-sm">No products added yet. Search above to add products.</Text>
-          )}
+              {/* Combo price */}
+              <div>
+                <Label htmlFor="combo-price" className="mb-1.5 block">
+                  Combo Price ৳ <span className="text-ui-fg-error">*</span>
+                  {form.comboPrice && form.originalPrice && Number(form.originalPrice) > 0 && Number(form.comboPrice) > 0 && (
+                    <span className="ml-2 text-xs text-ui-fg-subtle">
+                      ({discountPct(Number(form.comboPrice), Number(form.originalPrice)) ?? 0}% off)
+                    </span>
+                  )}
+                </Label>
+                <Input
+                  id="combo-price"
+                  type="number"
+                  min="0"
+                  value={form.comboPrice}
+                  onChange={(e) => setForm((prev) => ({ ...prev, comboPrice: e.target.value }))}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+          </div>
 
           {/* Form actions */}
           <div className="mt-6 flex items-center gap-3 border-t border-ui-border-base pt-5">
