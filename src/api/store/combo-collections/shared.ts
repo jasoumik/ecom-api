@@ -38,6 +38,9 @@ export function buildComboFromCollection(col: RawCollection): any {
     name_en: col.title,
     description_en: (meta.description as string) ?? undefined,
     image_url: (meta.image as string) ?? undefined,
+    images: typeof meta.images === 'string'
+      ? meta.images.split(',').map((u: string) => u.trim()).filter(Boolean)
+      : undefined,
     original_price: originalPrice,
     combo_price: comboPrice,
     discount_pct:
