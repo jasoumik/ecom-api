@@ -79,6 +79,58 @@ const ComboOffersPage = () => {
   const [searching, setSearching] = useState(false)
   const [originalPriceManual, setOriginalPriceManual] = useState(false)
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // ── Images (media module) ─────────────────────────────────────────────────
+  const [images, setImages] = useState<{ id: string; r2Url: string; hasWatermark: boolean }[]>([])
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const imageFileRef = useRef<HTMLInputElement | null>(null)
+
+  // ── Images ───────────────────────────────────────────────────────────────
+  const fetchImages = async (comboId: string) => {
+    try {
+      const res = await fetch(`/admin/media?entityType=combo&entityId=${comboId}`, { credentials: 'include' })
+      const json = await res.json()
+      setImages(json.data ?? [])
+    } catch { setImages([]) }
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, comboId: string) => {
+    const file = e.target.files?.[0]
+    if (!file || !comboId) return
+    setUploadingImage(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('entityType', 'combo')
+      fd.append('entityId', comboId)
+      fd.append('applyWatermark', 'true')
+      const res = await fetch('/admin/media', { method: 'POST', credentials: 'include', body: fd })
+      if (!res.ok) throw new Error('Upload failed')
+      const json = await res.json()
+      const url = json.data?.r2Url
+      // Set as primary image on the combo
+      if (url) {
+        await fetch(`/admin/combos/${comboId}`, {
+          method: 'PATCH', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: url }),
+        })
+        setForm((prev) => ({ ...prev }))
+      }
+      await fetchImages(comboId)
+      toast.success('Image uploaded')
+    } catch { toast.error('Image upload failed') } finally {
+      setUploadingImage(false)
+      if (imageFileRef.current) imageFileRef.current.value = ''
+    }
+  }
+
+  const handleDeleteImage = async (mediaId: string, comboId: string) => {
+    try {
+      await fetch(`/admin/media/${mediaId}`, { method: 'DELETE', credentials: 'include' })
+      await fetchImages(comboId)
+      toast.success('Image deleted')
+    } catch { toast.error('Failed to delete image') }
+  }
 
   // ── Fetch all combos ──────────────────────────────────────────────────────
   const fetchCombos = async () => {
@@ -172,10 +224,12 @@ const ComboOffersPage = () => {
     }
     setProductSearch('')
     setProductResults([])
+    fetchImages(combo.id)
     setShowForm(true)
   }
 
   const cancelForm = () => {
+    setImages([])
     setShowForm(false)
     setEditId(null)
     setForm(EMPTY_FORM)
@@ -539,6 +593,50 @@ const ComboOffersPage = () => {
               </div>
             </div>
           </div>
+
+          {/* ── Images (edit mode only) ──────────────────────────────────── */}
+          {editId && (
+            <div className="border-t border-ui-border-base pt-5 mt-5">
+              <Label className="mb-3 block text-base font-semibold">Images</Label>
+              <p className="text-xs text-ui-fg-subtle mb-3">Images are converted to WebP and watermarked automatically. First image becomes the combo cover.</p>
+              <div className="flex flex-wrap gap-3 mb-3">
+                {images.map((img) => (
+                  <div key={img.id} className="relative group">
+                    <img src={img.r2Url} alt="" className="w-24 h-24 rounded-lg object-cover border border-ui-border-base" />
+                    {img.hasWatermark && (
+                      <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] px-1 rounded">WM</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteImage(img.id, editId)}
+                      className="absolute -top-1.5 -right-1.5 hidden group-hover:flex items-center justify-center w-5 h-5 rounded-full bg-ui-bg-error text-white"
+                    >
+                      <XMark />
+                    </button>
+                  </div>
+                ))}
+                <label className="w-24 h-24 rounded-lg border-2 border-dashed border-ui-border-base flex flex-col items-center justify-center cursor-pointer hover:border-ui-border-interactive transition-colors text-ui-fg-muted hover:text-ui-fg-base">
+                  {uploadingImage ? (
+                    <span className="text-xs">Uploading…</span>
+                  ) : (
+                    <>
+                      <span className="text-2xl">+</span>
+                      <span className="text-[10px] mt-1">Add Image</span>
+                    </>
+                  )}
+                  <input
+                    ref={imageFileRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploadingImage}
+                    onChange={(e) => handleImageUpload(e, editId)}
+                  />
+                </label>
+              </div>
+              <p className="text-xs text-ui-fg-subtle">💡 Save the combo first, then add images in edit mode.</p>
+            </div>
+          )}
 
           {/* Form actions */}
           <div className="mt-6 flex items-center gap-3 border-t border-ui-border-base pt-5">
