@@ -7,7 +7,14 @@ export async function GET(req: MedusaRequest, res: MedusaResponse): Promise<void
   try {
     const comboService = req.scope.resolve<ComboOfferModuleService>(COMBO_OFFER_MODULE)
     const combos = await comboService.listCombos({ isActive: true })
-    res.status(200).json({ data: combos })
+    const withItems = await Promise.all(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      combos.map(async (combo: any) => ({
+        ...combo,
+        items: await comboService.getItems(combo.id),
+      }))
+    )
+    res.status(200).json({ data: withItems })
   } catch (error) {
     errorHandler(error, req, res)
   }
