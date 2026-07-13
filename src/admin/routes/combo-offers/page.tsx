@@ -118,7 +118,7 @@ const ComboOffersPage = () => {
       setSearching(true)
       try {
         const res = await fetch(
-          `/admin/products?q=${encodeURIComponent(productSearch)}&limit=10&fields=id,title,thumbnail,variants,variants.prices`,
+          `/admin/products?q=${encodeURIComponent(productSearch)}&limit=10&fields=id,title,thumbnail,*variants,variants.*,variants.prices.*`,
           { credentials: 'include' },
         )
         const json = await res.json()
