@@ -18,12 +18,13 @@ export async function GET(req: MedusaRequest, res: MedusaResponse): Promise<void
     const productService = req.scope.resolve(Modules.PRODUCT) as any
 
     const collections: RawCollection[] = await productService.listProductCollections(
-      { handle, metadata: { is_combo: 'true' } },
+      { handle },
       { relations: ['products', 'products.variants'], take: 1 },
     )
 
+    // Verify it's marked as a combo — guards against regular collections being accessed
     const collection = collections[0]
-    if (!collection) {
+    if (!collection || (collection.metadata?.is_combo !== 'true' && collection.metadata?.is_combo !== true)) {
       res.status(404).json({ message: 'Combo not found' })
       return
     }

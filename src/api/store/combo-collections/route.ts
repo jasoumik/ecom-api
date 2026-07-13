@@ -17,11 +17,13 @@ export async function GET(req: MedusaRequest, res: MedusaResponse): Promise<void
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const productService = req.scope.resolve(Modules.PRODUCT) as any
 
-    const collections: RawCollection[] = await productService.listProductCollections(
-      { metadata: { is_combo: 'true' } },
-      { relations: ['products', 'products.variants'], take: 100 },
+    const all: RawCollection[] = await productService.listProductCollections(
+      {},
+      { relations: ['products', 'products.variants'], take: 200 },
     )
 
+    // Filter in JS — Medusa ORM does not support JSON metadata field filtering
+    const collections = all.filter((c) => c.metadata?.is_combo === 'true' || c.metadata?.is_combo === true)
     const data = collections.map(buildComboFromCollection)
     logger.info('combo-collections list', { count: data.length })
     res.status(200).json({ data })
