@@ -7,22 +7,26 @@ import { errorHandler } from '../../../shared/errors/error-handler'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function enrichItems(items: any[], scope: MedusaRequest['scope']): Promise<any[]> {
   if (!items.length) return items
-  const productIds = [...new Set(items.map((i: { productId: string }) => i.productId))]
+  const productIds = [...new Set(items.map((i: { productId: string }) => i.productId))] as string[]
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const productService = scope.resolve(Modules.PRODUCT) as any
     const products = await productService.listProducts(
       { id: productIds },
-      { select: ['id', 'title', 'thumbnail', 'handle'], take: productIds.length }
+      { relations: ['variants', 'variants.prices'], take: productIds.length }
     )
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const map: Record<string, any> = Object.fromEntries(products.map((p: any) => [p.id, p]))
-    return items.map((item: { productId: string }) => ({
-      ...item,
-      productTitle: map[item.productId]?.title ?? null,
-      productThumb: map[item.productId]?.thumbnail ?? null,
-      productHandle: map[item.productId]?.handle ?? null,
-    }))
+    return items.map((item: { productId: string }) => {
+      const p = map[item.productId]
+      return {
+        ...item,
+        productTitle: p?.title ?? null,
+        productThumb: p?.thumbnail ?? null,
+        productHandle: p?.handle ?? null,
+        productVariants: p?.variants ?? [],
+      }
+    })
   } catch {
     return items
   }
