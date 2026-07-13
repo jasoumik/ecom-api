@@ -54,9 +54,6 @@ module.exports = defineConfig({
       resolve: "./src/modules/attribute",
     },
     {
-      resolve: "./src/modules/combo-offer",
-    },
-    {
       resolve: "./src/modules/media",
       options: {
         r2Endpoint: process.env.R2_ENDPOINT,
