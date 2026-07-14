@@ -19,7 +19,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse): Promise<void
 
     const all: RawCollection[] = await productService.listProductCollections(
       {},
-      { relations: ['products', 'products.variants'], take: 200 },
+      { relations: ['products', 'products.variants', 'products.images'], take: 200 },
     )
 
     // Filter in JS — Medusa ORM does not support JSON metadata field filtering

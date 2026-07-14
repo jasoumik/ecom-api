@@ -47,12 +47,39 @@ async function captureProductImages(
   next()
 }
 
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')   // strip non-word chars
+    .replace(/[\s_]+/g, '-')    // spaces/underscores → hyphens
+    .replace(/--+/g, '-')       // collapse multiple hyphens
+    .replace(/^-+|-+$/g, '')    // trim leading/trailing hyphens
+}
+
+async function autoGenerateCollectionHandle(
+  req: MedusaRequest,
+  res: MedusaResponse,
+  next: MedusaNextFunction
+): Promise<void> {
+  const body = req.body as Record<string, unknown> | undefined
+  if (body && body.title && !body.handle) {
+    body.handle = slugify(body.title as string)
+  }
+  next()
+}
+
 export default defineMiddlewares({
   routes: [
     {
       matcher: '/admin/products/:id',
       method: ['POST'],
       middlewares: [captureProductImages],
+    },
+    {
+      matcher: '/admin/collections',
+      method: ['POST'],
+      middlewares: [autoGenerateCollectionHandle],
     },
   ],
 })

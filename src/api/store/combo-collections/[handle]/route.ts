@@ -19,7 +19,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse): Promise<void
 
     const collections: RawCollection[] = await productService.listProductCollections(
       { handle },
-      { relations: ['products', 'products.variants'], take: 1 },
+      { relations: ['products', 'products.variants', 'products.images'], take: 1 },
     )
 
     // Verify it's marked as a combo — guards against regular collections being accessed

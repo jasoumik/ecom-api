@@ -35,6 +35,7 @@ export function buildComboFromCollection(col: RawCollection): any {
   return {
     id: col.id,
     handle: col.handle,
+    promo_code: (meta.promo_code as string) ?? undefined,
     name_en: col.title,
     description_en: (meta.description as string) ?? undefined,
     image_url: (meta.image as string) ?? undefined,
