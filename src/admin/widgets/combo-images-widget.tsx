@@ -1,7 +1,7 @@
 import { defineWidgetConfig } from '@medusajs/admin-sdk'
 import { Heading, Text, Button, toast } from '@medusajs/ui'
 import { useEffect, useRef, useState } from 'react'
-import { Trash, Upload } from '@medusajs/icons'
+import { Trash, ArrowUpCircleSolid } from '@medusajs/icons'
 
 type MediaFile = {
   id: string
@@ -16,7 +16,7 @@ type CollectionData = {
 
 const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
   const [images, setImages] = useState<MediaFile[]>([])
-  const [uploading, setUploading] = useState(false)
+  const [uploading, setArrowUpCircleSoliding] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   async function fetchImages() {
@@ -32,7 +32,7 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return
-    setUploading(true)
+    setArrowUpCircleSoliding(true)
     const uploaded: MediaFile[] = []
 
     for (const file of Array.from(files)) {
@@ -50,9 +50,9 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
         })
         const json = await res.json()
         if (json.data?.url) uploaded.push(json.data)
-        else toast.error('Upload failed', { description: json.error?.message ?? 'Unknown error' })
+        else toast.error('ArrowUpCircleSolid failed', { description: json.error?.message ?? 'Unknown error' })
       } catch {
-        toast.error('Upload failed', { description: file.name })
+        toast.error('ArrowUpCircleSolid failed', { description: file.name })
       }
     }
 
@@ -63,10 +63,10 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
       toast.success(`${uploaded.length} image${uploaded.length > 1 ? 's' : ''} uploaded`)
     }
 
-    setUploading(false)
+    setArrowUpCircleSoliding(false)
   }
 
-  async function handleDelete(mediaId: string, url: string) {
+  async function handleDelete(mediaId: string) {
     try {
       await fetch(`/admin/media/${mediaId}`, { method: 'DELETE', credentials: 'include' })
       const remaining = images.filter((img) => img.id !== mediaId)
@@ -103,8 +103,8 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
           isLoading={uploading}
           onClick={() => inputRef.current?.click()}
         >
-          <Upload className="mr-1.5" />
-          Upload
+          <ArrowUpCircleSolid className="mr-1.5" />
+          ArrowUpCircleSolid
         </Button>
       </div>
 
@@ -122,7 +122,7 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
           className="border-2 border-dashed border-ui-border-base rounded-lg p-8 text-center cursor-pointer hover:border-ui-border-interactive transition-colors"
           onClick={() => inputRef.current?.click()}
         >
-          <Upload className="mx-auto mb-2 text-ui-fg-muted" />
+          <ArrowUpCircleSolid className="mx-auto mb-2 text-ui-fg-muted" />
           <Text className="text-ui-fg-muted text-sm">Click or drag images to upload</Text>
           <Text className="text-ui-fg-subtle text-xs mt-1">First image becomes the main combo image</Text>
         </div>
@@ -137,7 +137,7 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
                 </span>
               )}
               <button
-                onClick={() => handleDelete(img.id, img.url)}
+                onClick={() => handleDelete(img.id)}
                 className="absolute top-1 right-1 p-1 rounded bg-white/80 text-ui-fg-error opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
               >
                 <Trash className="w-3 h-3" />
@@ -148,7 +148,7 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
             className="border-2 border-dashed border-ui-border-base rounded-lg aspect-square flex items-center justify-center cursor-pointer hover:border-ui-border-interactive transition-colors"
             onClick={() => inputRef.current?.click()}
           >
-            <Upload className="text-ui-fg-muted" />
+            <ArrowUpCircleSolid className="text-ui-fg-muted" />
           </div>
         </div>
       )}
