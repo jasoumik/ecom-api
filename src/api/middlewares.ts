@@ -59,7 +59,7 @@ function slugify(text: string): string {
 
 async function autoGenerateCollectionHandle(
   req: MedusaRequest,
-  res: MedusaResponse,
+  _res: MedusaResponse,
   next: MedusaNextFunction
 ): Promise<void> {
   const body = req.body as Record<string, unknown> | undefined
