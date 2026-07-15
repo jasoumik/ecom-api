@@ -16,7 +16,7 @@ type CollectionData = {
 
 const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
   const [images, setImages] = useState<MediaFile[]>([])
-  const [uploading, setArrowUpCircleSoliding] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   async function fetchImages() {
@@ -32,7 +32,7 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return
-    setArrowUpCircleSoliding(true)
+    setUploading(true)
     const uploaded: MediaFile[] = []
 
     for (const file of Array.from(files)) {
@@ -50,9 +50,9 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
         })
         const json = await res.json()
         if (json.data?.url) uploaded.push(json.data)
-        else toast.error('ArrowUpCircleSolid failed', { description: json.error?.message ?? 'Unknown error' })
+        else toast.error('Upload failed', { description: json.error?.message ?? 'Unknown error' })
       } catch {
-        toast.error('ArrowUpCircleSolid failed', { description: file.name })
+        toast.error('Upload failed', { description: file.name })
       }
     }
 
@@ -63,7 +63,7 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
       toast.success(`${uploaded.length} image${uploaded.length > 1 ? 's' : ''} uploaded`)
     }
 
-    setArrowUpCircleSoliding(false)
+    setUploading(false)
   }
 
   async function handleDelete(mediaId: string) {
@@ -79,7 +79,6 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
   }
 
   async function syncMetadata(imgs: MediaFile[]) {
-    // First image = main image_url, all = images (comma-separated)
     const metadata: Record<string, unknown> = {
       ...(data.metadata ?? {}),
       image: imgs[0]?.url ?? '',
@@ -94,7 +93,7 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
   }
 
   return (
-    <div className="bg-white border border-ui-border-base rounded-lg p-4 space-y-4">
+    <div className="bg-ui-bg-base border border-ui-border-base rounded-lg p-4 space-y-4">
       <div className="flex items-center justify-between">
         <Heading level="h2" className="text-ui-fg-base">Combo Images</Heading>
         <Button
@@ -104,7 +103,7 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
           onClick={() => inputRef.current?.click()}
         >
           <ArrowUpCircleSolid className="mr-1.5" />
-          ArrowUpCircleSolid
+          Upload
         </Button>
       </div>
 
@@ -132,13 +131,13 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
             <div key={img.id} className="relative group rounded-lg overflow-hidden border border-ui-border-base aspect-square bg-ui-bg-subtle">
               <img src={img.url} alt={img.filename} className="w-full h-full object-cover" />
               {idx === 0 && (
-                <span className="absolute top-1 left-1 text-[10px] bg-black/60 text-white px-1.5 py-0.5 rounded font-medium">
+                <span className="absolute top-1 left-1 text-[10px] bg-ui-bg-overlay text-ui-fg-on-color px-1.5 py-0.5 rounded font-medium">
                   Main
                 </span>
               )}
               <button
                 onClick={() => handleDelete(img.id)}
-                className="absolute top-1 right-1 p-1 rounded bg-white/80 text-ui-fg-error opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
+                className="absolute top-1 right-1 p-1 rounded bg-ui-bg-base/80 text-ui-fg-error opacity-0 group-hover:opacity-100 transition-opacity hover:bg-ui-bg-base"
               >
                 <Trash className="w-3 h-3" />
               </button>

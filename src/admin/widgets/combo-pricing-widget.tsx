@@ -59,7 +59,7 @@ const ComboPricingWidget = ({ data }: { data: CollectionData }) => {
   if (loading) return null
 
   return (
-    <div className="bg-white border border-ui-border-base rounded-lg p-4 space-y-4">
+    <div className="bg-ui-bg-base border border-ui-border-base rounded-lg p-4 space-y-4">
       <Heading level="h2" className="text-ui-fg-base">Combo Pricing</Heading>
 
       {products.length === 0 ? (
