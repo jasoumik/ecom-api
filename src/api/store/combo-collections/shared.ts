@@ -23,7 +23,7 @@ export function buildComboFromCollection(col: RawCollection): any {
     product: {
       id: p.id,
       title: p.title ?? '',
-      thumbnail: p.thumbnail ?? undefined,
+      thumbnail: p.thumbnail ?? p.images?.[0]?.url ?? undefined,
       handle: p.handle ?? '',
       variants: p.variants ?? [],
     },
