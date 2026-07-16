@@ -4,29 +4,40 @@ import { Modules } from '@medusajs/framework/utils'
 export const GET = async (req: MedusaRequest, res: MedusaResponse): Promise<void> => {
   const { order_id, phone } = req.query as { order_id?: string; phone?: string }
 
-  if (!order_id || !phone) {
-    res.status(400).json({ message: 'order_id and phone are required' })
+  // Phone is the required key: it guards against sequential order-ID enumeration.
+  // order_id is optional and only narrows the lookup to a specific order.
+  if (!phone) {
+    res.status(400).json({ message: 'phone is required' })
     return
+  }
+
+  const relations = ['items', 'shipping_address', 'fulfillments']
+  const inputPhone = phone.replace(/\D/g, '').slice(-10)
+  const phoneMatches = (o: any): boolean => {
+    const orderPhone = o.shipping_address?.phone?.replace(/\D/g, '')
+    return !!orderPhone && !!inputPhone && orderPhone.endsWith(inputPhone)
   }
 
   try {
     const orderService = req.scope.resolve(Modules.ORDER)
 
-    const orders = await (orderService as any).listOrders(
-      { display_id: Number(order_id) },
-      { relations: ['items', 'shipping_address', 'fulfillments'] }
-    )
-
-    const order = orders?.[0]
-    if (!order) {
-      res.status(404).json({ message: 'Order not found' })
-      return
+    let order: any
+    if (order_id) {
+      const orders = await (orderService as any).listOrders(
+        { display_id: Number(order_id) },
+        { relations }
+      )
+      order = orders?.[0]
+    } else {
+      // Phone-only: scan recent orders and return the latest one for this phone.
+      const orders = await (orderService as any).listOrders(
+        {},
+        { relations, order: { created_at: 'DESC' }, take: 200 }
+      )
+      order = (orders ?? []).find(phoneMatches)
     }
 
-    const orderPhone = order.shipping_address?.phone?.replace(/\D/g, '')
-    const inputPhone = phone.replace(/\D/g, '')
-
-    if (!orderPhone || !orderPhone.endsWith(inputPhone.slice(-10))) {
+    if (!order || !phoneMatches(order)) {
       res.status(404).json({ message: 'Order not found' })
       return
     }
