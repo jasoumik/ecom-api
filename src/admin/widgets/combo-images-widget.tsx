@@ -5,8 +5,9 @@ import { Trash, ArrowUpCircleSolid } from '@medusajs/icons'
 
 type MediaFile = {
   id: string
-  url: string
-  filename: string
+  r2Url: string
+  fileName: string
+  originalName: string
 }
 
 type CollectionData = {
@@ -49,7 +50,7 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
           body: form,
         })
         const json = await res.json()
-        if (json.data?.url) uploaded.push(json.data)
+        if (json.data?.r2Url) uploaded.push(json.data)
         else toast.error('Upload failed', { description: json.error?.message ?? 'Unknown error' })
       } catch {
         toast.error('Upload failed', { description: file.name })
@@ -81,8 +82,8 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
   async function syncMetadata(imgs: MediaFile[]) {
     const metadata: Record<string, unknown> = {
       ...(data.metadata ?? {}),
-      image: imgs[0]?.url ?? '',
-      images: imgs.map((i) => i.url).join(','),
+      image: imgs[0]?.r2Url ?? '',
+      images: imgs.map((i) => i.r2Url).join(','),
     }
     await fetch(`/admin/collections/${data.id}`, {
       method: 'POST',
@@ -129,7 +130,7 @@ const ComboImagesWidget = ({ data }: { data: CollectionData }) => {
         <div className="grid grid-cols-3 gap-2">
           {images.map((img, idx) => (
             <div key={img.id} className="relative group rounded-lg overflow-hidden border border-ui-border-base aspect-square bg-ui-bg-subtle">
-              <img src={img.url} alt={img.filename} className="w-full h-full object-cover" />
+              <img src={img.r2Url} alt={img.originalName} className="w-full h-full object-cover" />
               {idx === 0 && (
                 <span className="absolute top-1 left-1 text-[10px] bg-ui-bg-overlay text-ui-fg-on-color px-1.5 py-0.5 rounded font-medium">
                   Main
