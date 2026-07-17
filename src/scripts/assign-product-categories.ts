@@ -29,23 +29,29 @@ const CATEGORY_IDS: Record<string, string> = {
   "hair-care":      "pcat_01KX4D84Y7DVG70XWWJ38JMAN5",
   "shampoo":        "pcat_01KX4D84YPPV7K3QV2PS24NJYM",
   "body-care":      "pcat_01KX4D84Z2AKP519YWFBTGBPD1",
+  // Fill these in with the IDs printed by seed-categories.ts after it creates them.
+  "baby-care":      "",
+  "soap":           "",
 }
 
 function inferCategoryHandles(title: string): string[] {
   const t = title.toLowerCase()
   const cats: string[] = ["skincare"]
 
-  if (t.includes("shampoo") || (t.includes("hair") && !t.includes("skin"))) return ["hair-care", "shampoo"]
+  if (t.includes("baby") || t.includes("kids") || t.includes("kodomo") || t.includes("mothercare")) return ["baby-care"]
+  if (t.includes("soap")) return ["soap"]
+  if (t.includes("shampoo")) return ["hair-care", "shampoo"]
+  if (t.includes("conditioner") || t.includes("hair pack") || t.includes("hair mask") || (t.includes("hair") && !t.includes("skin"))) return ["hair-care"]
   if (t.includes("body lotion") || t.includes("body cream") || t.includes("body wash")) return ["body-care"]
 
-  if (t.includes("sun stick")) { cats.push("sun-stick", "sunscreen"); return [...new Set(cats)] }
+  if (t.includes("sun stick") || t.includes("sunstick")) { cats.push("sun-stick", "sunscreen"); return [...new Set(cats)] }
   if (t.includes("sunscreen") || t.includes("sun cream") || t.includes("spf") || /\buv\b/.test(t)) cats.push("sunscreen")
   if (t.includes("sheet mask")) { cats.push("sheet-mask", "face-mask"); return [...new Set(cats)] }
-  if ((t.includes("mask") || /\bpads?\b/.test(t)) && !t.includes("eye pad")) cats.push("face-mask")
+  if ((t.includes("mask") || t.includes("face pack") || /\bpads?\b/.test(t)) && !t.includes("eye pad")) cats.push("face-mask")
   if (t.includes("eye")) cats.push("eye-care")
   if (t.includes("cleansing oil") || t.includes("oil cleanser") || (t.includes("cleansing") && t.includes("oil"))) { cats.push("oil-cleanser", "cleanser"); return [...new Set(cats)] }
   if (t.includes("cleansing balm") || t.includes("balm cleanser")) { cats.push("cleansing-balm", "cleanser"); return [...new Set(cats)] }
-  if (t.includes("foam") || t.includes("cleanser") || t.includes("face wash") || (t.includes("cleansing") && !cats.includes("oil-cleanser"))) cats.push("cleanser")
+  if (t.includes("foam") || t.includes("cleanser") || t.includes("face wash") || t.includes("facial wash") || (t.includes("cleansing") && !cats.includes("oil-cleanser"))) cats.push("cleanser")
   if (t.includes("toner") || t.includes("softener") || (t.includes("essence") && !t.includes("serum"))) cats.push("toner")
   if (t.includes("ampoule") || t.includes("ampule")) cats.push("ampule")
   else if (t.includes("serum") || t.includes("booster")) cats.push("serum")

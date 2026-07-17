@@ -114,6 +114,18 @@ export default async function seedCategories({ container }: ExecArgs) {
       description: "Body moisturisers, cleansers, and scrubs",
       rank: 2,
     },
+    {
+      name: "Baby Care",
+      handle: "baby-care",
+      description: "Gentle baby washes, shampoos, lotions, oils, creams, and soaps",
+      rank: 3,
+    },
+    {
+      name: "Soap",
+      handle: "soap",
+      description: "Bar soaps — whitening, kojic, herbal, and cleansing",
+      rank: 4,
+    },
   ]
 
   const existingHandles = await getExistingHandles()
