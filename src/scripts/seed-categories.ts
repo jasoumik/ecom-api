@@ -40,14 +40,16 @@ export default async function seedCategories({ container }: ExecArgs) {
       const node = nodes[i]
       let id: string
 
-      if (existingHandles.has(node.handle)) {
-        // Fetch the existing record to get its id for child creation
-        const records = await (productService as {
-          listProductCategories: (
-            filters: Record<string, unknown>,
-            options: Record<string, unknown>
-          ) => Promise<Array<{ id: string; handle: string }>>
-        }).listProductCategories({ handle: node.handle }, { take: 1 })
+      // Look the category up by its own handle each time — robust even when
+      // the bulk pre-fetch returns nothing on this Medusa version.
+      const records = await (productService as {
+        listProductCategories: (
+          filters: Record<string, unknown>,
+          options: Record<string, unknown>
+        ) => Promise<Array<{ id: string; handle: string }>>
+      }).listProductCategories({ handle: node.handle }, { take: 1 })
+
+      if (records.length > 0) {
         id = records[0].id
         console.log(`  Skipped (exists): ${node.handle} (id: ${id})`)
       } else {
