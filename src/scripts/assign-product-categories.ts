@@ -29,9 +29,8 @@ const CATEGORY_IDS: Record<string, string> = {
   "hair-care":      "pcat_01KX4D84Y7DVG70XWWJ38JMAN5",
   "shampoo":        "pcat_01KX4D84YPPV7K3QV2PS24NJYM",
   "body-care":      "pcat_01KX4D84Z2AKP519YWFBTGBPD1",
-  // Fill these in with the IDs printed by seed-categories.ts after it creates them.
-  "baby-care":      "",
-  "soap":           "",
+  "baby-care":      "pcat_01KXS05JQY750MSYJQR4B10KCP",
+  "soap":           "pcat_01KXS05JRQTJ3A4AYAJ97A4P5S",
 }
 
 function inferCategoryHandles(title: string): string[] {
