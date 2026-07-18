@@ -12,7 +12,7 @@ import { MedusaRequest, MedusaResponse } from '@medusajs/framework/http'
  *   REVALIDATE_SECRET  must match the storefront's REVALIDATE_SECRET
  */
 export async function POST(
-  req: MedusaRequest,
+  _req: MedusaRequest,
   res: MedusaResponse
 ): Promise<void> {
   const storefrontUrl = process.env.STOREFRONT_URL
