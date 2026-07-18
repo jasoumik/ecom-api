@@ -10,15 +10,26 @@ export type RawCollection = {
   products?: any[]
 }
 
+/**
+ * Parse the comma-separated `metadata.product_ids` string into an ordered id list.
+ * Combo membership is stored here (NOT via the collection's `products`/`collection_id`
+ * relation) so member products keep their own brand collection.
+ */
+export function parseComboProductIds(metadata: Record<string, unknown> | null | undefined): string[] {
+  const raw = metadata?.product_ids
+  if (typeof raw !== 'string') return []
+  return raw.split(',').map((id) => id.trim()).filter(Boolean)
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function buildComboFromCollection(col: RawCollection): any {
+export function buildComboFromCollection(col: RawCollection, products?: any[]): any {
   const meta = col.metadata ?? {}
 
   // Prices stored as whole taka in metadata; multiply ×100 for paisa
   const originalPrice = Number(meta.original_price ?? 0) * 100
   const comboPrice = Number(meta.combo_price ?? 0) * 100
 
-  const items = (col.products ?? []).map((p: any, i: number) => ({
+  const items = (products ?? col.products ?? []).map((p: any, i: number) => ({
     id: `${col.id}-item-${i}`,
     product: {
       id: p.id,

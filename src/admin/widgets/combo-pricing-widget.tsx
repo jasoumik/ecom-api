@@ -34,17 +34,38 @@ const ComboPricingWidget = ({ data }: { data: CollectionData }) => {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
+  const isCombo = data.metadata?.is_combo === 'true' || data.metadata?.is_combo === true
+
   useEffect(() => {
-    fetch(`/admin/collections/${data.id}?fields=*products.variants,*products.variants.metadata`, {
-      credentials: 'include',
-    })
+    if (!isCombo) {
+      setLoading(false)
+      return
+    }
+    const meta = (data.metadata ?? {}) as Record<string, unknown>
+    const ids =
+      typeof meta.product_ids === 'string'
+        ? meta.product_ids.split(',').map((id) => id.trim()).filter(Boolean)
+        : []
+
+    if (ids.length === 0) {
+      setProducts([])
+      setLoading(false)
+      return
+    }
+
+    const qs = new URLSearchParams({ limit: String(ids.length), fields: '*variants.metadata' })
+    ids.forEach((id) => qs.append('id[]', id))
+
+    fetch(`/admin/products?${qs.toString()}`, { credentials: 'include' })
       .then((r) => r.json())
       .then((json) => {
-        setProducts(json.collection?.products ?? [])
+        const byId = new Map<string, Product>((json.products ?? []).map((p: Product) => [p.id, p]))
+        // Preserve the metadata order
+        setProducts(ids.map((id) => byId.get(id)).filter((p): p is Product => Boolean(p)))
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [data.id])
+  }, [data.id, data.metadata])
 
   const meta = (data.metadata ?? {}) as Record<string, unknown>
   const comboPriceTaka = Number(meta.combo_price ?? 0)
@@ -56,7 +77,7 @@ const ComboPricingWidget = ({ data }: { data: CollectionData }) => {
     ? Math.round((discount / (originalPriceTaka || calculatedTotal)) * 100)
     : 0
 
-  if (loading) return null
+  if (!isCombo || loading) return null
 
   return (
     <div className="bg-ui-bg-base border border-ui-border-base rounded-lg p-4 space-y-4">
